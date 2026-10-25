@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FoxLaunch</title>
+  <link rel="stylesheet" href="/src/styles/themes.css" />
+  <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+<body>
+  <div id="app" class="foxlaunch-app">
+    <!-- Application Header -->
+    <header class="app-header" role="banner">
+      <div class="header-brand">
+        <h1 class="brand-title">FoxLaunch</h1>
+      </div>
+      
+      <!-- Search & Filter Bar -->
+      <div class="header-search" role="search">
+        <div class="search-input-wrapper">
+          <input
+            type="search"
+            id="search-input"
+            class="search-input"
+            placeholder="Search shortcuts or containers... (/ to focus)"
+            aria-label="Search shortcuts or containers"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <kbd class="search-hotkey" aria-hidden="true">/</kbd>
+        </div>
+      </div>
+
+      <!-- Header Action Controls -->
+      <div class="header-actions">
+        <button
+          type="button"
+          id="settings-btn"
+          class="btn-icon"
+          aria-label="Open FoxLaunch Settings"
+          title="Settings"
+        >
+          <svg class="icon-gear" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content: Dynamic Container Swimlanes -->
+    <main id="main-content" class="app-main" role="main">
+      <div id="swimlanes-container" class="swimlanes-container" aria-label="Container Swimlanes">
+        <!-- Rendered by src/app.ts -->
+      </div>
+    </main>
+
+    <!-- Dynamic Overlay Mount Roots -->
+    <div id="modal-root" class="modal-root" aria-live="polite"></div>
+    <div id="toast-root" class="toast-root" aria-live="assertive"></div>
+    <div id="onboarding-root" class="onboarding-root" aria-live="polite"></div>
+  </div>
+
+  <!-- Main Application Script (ES Module) -->
+  <script type="module" src="/src/app.ts"></script>
+</body>
+</html>

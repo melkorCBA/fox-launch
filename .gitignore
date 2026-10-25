@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Production build output
+dist/
+
+# Test runs and reports
+playwright-report/
+test-results/
+
+# Multi-agent coordination logs & workspace
+.agents/
+
+# Specification, market research, and plan files
+foxlaunch_specification.md
+market-research.md
+pilot-plan.md
+TEST_INFRA.md
+TEST_READY.md
+*.plan.md
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/

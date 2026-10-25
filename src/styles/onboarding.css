@@ -1,0 +1,145 @@
+/**
+ * FoxLaunch — First-Run Onboarding Walkthrough Styles
+ * Strict CSP compliant: System typography, zero external resources.
+ */
+
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-overlay);
+  backdrop-filter: blur(3px);
+  padding: var(--space-4);
+  animation: modalFadeIn var(--transition-fast);
+}
+
+.onboarding-modal {
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  animation: modalSlideUp var(--transition-fast);
+  outline: none;
+}
+
+.onboarding-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-3);
+}
+
+.onboarding-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.onboarding-badge {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--border-focus);
+  color: #ffffff;
+}
+
+.onboarding-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.onboarding-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 180px;
+}
+
+.onboarding-step-heading {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.onboarding-step-body {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.onboarding-tips-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0 0;
+  padding-left: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.onboarding-tips-list li {
+  line-height: var(--leading-normal);
+}
+
+.onboarding-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.onboarding-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.step-indicator {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.step-dots {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.step-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--border-subtle);
+  transition: all var(--transition-fast);
+}
+
+.step-dot.is-active {
+  width: 16px;
+  background: var(--border-focus);
+}
+
+.onboarding-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}

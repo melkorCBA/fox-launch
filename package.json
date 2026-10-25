@@ -1,0 +1,24 @@
+{
+  "name": "foxlaunch",
+  "version": "1.0.0",
+  "description": "Container-aware New Tab workspace launchpad for Firefox Multi-Account Containers",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build",
+    "build:watch": "vite build --watch",
+    "lint:ext": "web-ext lint --source-dir dist",
+    "test:e2e": "playwright test",
+    "test": "pnpm run typecheck && pnpm run build && pnpm run lint:ext && pnpm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@types/firefox-webext-browser": "^143.0.1",
+    "@types/node": "^22.13.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.2.0",
+    "web-ext": "^10.8.0"
+  }
+}
