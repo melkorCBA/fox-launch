@@ -3,6 +3,7 @@ node_modules/
 
 # Production build output
 dist/
+web-ext-artifacts/
 
 # Test runs and reports
 playwright-report/
