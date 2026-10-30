@@ -95,6 +95,37 @@ pnpm run test:e2e
 
 ---
 
+## 📦 GitHub Packages
+
+Production extension builds are published to [GitHub Packages](https://github.com/melkorCBA/fox-launch/packages).
+
+### Installing the Package
+
+GitHub Packages requires registry authentication even for public packages:
+
+1. Generate a GitHub [Personal Access Token (classic)](https://github.com/settings/tokens) with the `read:packages` scope.
+2. Configure your local or project `.npmrc` (do not commit your token):
+
+```ini
+@melkorcba:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
+```
+
+3. Export your token in your environment:
+```bash
+export GITHUB_TOKEN=ghp_yourTokenHere
+```
+
+4. Install the package:
+```bash
+npm install @melkorcba/fox-launch
+# or
+pnpm add @melkorcba/fox-launch
+```
+The package contains the production `dist/` extension bundle, `manifest.json`, and pre-packaged `.zip` archives.
+
+---
+
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).

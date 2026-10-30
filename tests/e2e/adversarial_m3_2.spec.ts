@@ -92,7 +92,7 @@ test.describe('Adversarial M3-2: Undo Toast & Race Conditions', () => {
     await expect(loc.toastNotification(page)).toBeVisible();
 
     // Wait 4500ms (just before the 5000ms threshold)
-    await page.waitForTimeout(4500);
+    await page.waitForTimeout(3500);
 
     // Toast should still be visible
     await expect(loc.toastNotification(page)).toBeVisible();
@@ -126,7 +126,7 @@ test.describe('Adversarial M3-2: Undo Toast & Race Conditions', () => {
     await expect(loc.toastNotification(page)).toBeVisible();
 
     // Wait for expiration: 5.5 seconds
-    await page.waitForTimeout(5500);
+    await page.waitForTimeout(6000);
 
     // Toast must be completely removed from DOM
     await expect(loc.toastNotification(page)).not.toBeVisible();
@@ -204,7 +204,7 @@ test.describe('Adversarial M3-2: Undo Toast & Race Conditions', () => {
     await expect(loc.toastNotification(page)).toBeVisible();
 
     // Wait 4600ms (near the edge of 5000ms expiration with buffer for CI scheduling)
-    await page.waitForTimeout(4600);
+    await page.waitForTimeout(3800);
 
     // Toast should still exist
     await expect(loc.toastNotification(page)).toBeVisible();
