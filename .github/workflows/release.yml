@@ -19,6 +19,7 @@ jobs:
   release:
     name: Build, Verify & Submit to AMO
     runs-on: ubuntu-latest
+    environment: production-amo
     outputs:
       listing_changed: ${{ steps.check_listing_diff.outputs.listing_changed }}
     steps:

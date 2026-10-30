@@ -22,7 +22,7 @@ jobs:
   sync-listing:
     name: Sync Store Listing to Mozilla Add-ons
     runs-on: ubuntu-latest
-    environment: production-amo-listing
+    environment: production-amo
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
