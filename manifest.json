@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FoxLaunch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Container-aware New Tab workspace launchpad for Firefox Multi-Account Containers.",
   "browser_specific_settings": {
     "gecko": {
