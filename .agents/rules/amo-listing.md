@@ -25,6 +25,8 @@ These guidelines apply whenever creating, editing, or reviewing files in `metada
   - Use standard AMO-supported Markdown only (`##`, `###`, `**`, `*`, `-`, `[]()`).
   - **Do NOT use raw HTML tags** (`<div>`, `<br>`, `<span>`, etc.).
   - Always maintain the core sections: Hook, Key Features, Privacy & Architecture, Keyboard Shortcuts, and Permissions Explained.
+* **Tags (`config.json`):**
+  - Strictly **at most 5 tags** allowed by AMO.
 * **Permissions Accuracy:**
   - The "Permissions Explained" section must strictly match permissions declared in `manifest.json`.
 

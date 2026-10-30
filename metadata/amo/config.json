@@ -7,11 +7,10 @@
   },
   "tags": [
     "containers",
-    "privacy",
-    "productivity",
     "tabs",
-    "workspace",
-    "newtab"
+    "newtab",
+    "privacy",
+    "productivity"
   ],
   "homepage": "https://github.com/melkorCBA/fox-launch",
   "support_url": "https://github.com/melkorCBA/fox-launch/issues"

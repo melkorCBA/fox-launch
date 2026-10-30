@@ -34,6 +34,10 @@ if (htmlTagRegex.test(description)) {
   fail('description.md contains raw HTML tags. AMO markdown only allows standard Markdown syntax.');
 }
 
+if (Array.isArray(config.tags) && config.tags.length > 5) {
+  fail(`config.json contains ${config.tags.length} tags. AMO permits a maximum of 5 tags.`);
+}
+
 console.log('✅ Validation passed:');
 console.log(`   - Summary length: ${summary.length}/250 characters`);
 console.log(`   - Description length: ${description.length} characters`);

@@ -29,6 +29,8 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -39,7 +41,7 @@ jobs:
       - name: Verify Version Parity
         id: version_check
         run: |
-          REF_TAG="${{ github.ref_name }}"
+          REF_TAG="$GITHUB_REF_NAME"
           TAG_VERSION="${REF_TAG#v}"
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
@@ -49,7 +51,7 @@ jobs:
           echo "Manifest version: $MANIFEST_VERSION"
 
           # On tag push, strictly verify all match
-          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
             if [[ "$TAG_VERSION" != "$PACKAGE_VERSION" || "$TAG_VERSION" != "$MANIFEST_VERSION" ]]; then
               echo "❌ Error: Version mismatch! Tag ($TAG_VERSION), package.json ($PACKAGE_VERSION), and manifest.json ($MANIFEST_VERSION) must match."
               exit 1
