@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Listing-as-code files (`metadata/amo/`) for store copy, tags, and categories.
 - Antigravity rule for AMO listing copy guidelines (`.agents/rules/amo-listing.md`).
 - Project skill `/create-pr` with automated listing impact analysis.
+- Pull request CI verification workflow (`.github/workflows/ci.yml`) gating merges on build, lint, test, and metadata validation passes.
 
 ## [1.0.0] - 2026-10-25
 
