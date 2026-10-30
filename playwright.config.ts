@@ -16,7 +16,7 @@ export default defineConfig({
   fullyParallel: false, // Run sequentially for predictable extension storage / mock isolation
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? (process.env.PLAYWRIGHT_WORKERS ? parseInt(process.env.PLAYWRIGHT_WORKERS, 10) : 2) : 1,
+  workers: process.env.PLAYWRIGHT_WORKERS ? parseInt(process.env.PLAYWRIGHT_WORKERS, 10) : (process.env.CI ? 2 : 1),
   reporter: [
     ['list'],
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
