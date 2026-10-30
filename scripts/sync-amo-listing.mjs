@@ -34,8 +34,24 @@ if (htmlTagRegex.test(description)) {
   fail('description.md contains raw HTML tags. AMO markdown only allows standard Markdown syntax.');
 }
 
-if (Array.isArray(config.tags) && config.tags.length > 5) {
-  fail(`config.json contains ${config.tags.length} tags. AMO permits a maximum of 5 tags.`);
+const ALLOWED_AMO_TAGS = new Set([
+  'ad blocker', 'anti malware', 'anti tracker', 'antivirus', 'chat', 'container',
+  'content blocker', 'coupon', 'dailymotion', 'dark mode', 'dndbeyond', 'download',
+  'facebook', 'google', 'image search', 'mp3', 'music', 'password manager',
+  'pinterest', 'pixiv', 'privacy', 'reddit', 'roblox', 'scholar', 'search',
+  'security', 'shopping', 'social media', 'streaming', 'torrent', 'translate',
+  'twitch', 'twitter', 'user scripts', 'video converter', 'video downloader',
+  'vpn', 'wayback machine', 'whatsapp', 'word counter', 'youtube', 'zoom'
+]);
+
+if (Array.isArray(config.tags)) {
+  if (config.tags.length > 5) {
+    fail(`config.json contains ${config.tags.length} tags. AMO permits a maximum of 5 tags.`);
+  }
+  const invalidTags = config.tags.filter((t) => !ALLOWED_AMO_TAGS.has(t));
+  if (invalidTags.length > 0) {
+    fail(`config.json contains invalid AMO tags: ${JSON.stringify(invalidTags)}. Allowed tags must match AMO whitelist (https://addons.mozilla.org/api/v5/addons/tags/).`);
+  }
 }
 
 console.log('✅ Validation passed:');

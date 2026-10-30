@@ -6,11 +6,11 @@
     ]
   },
   "tags": [
-    "containers",
-    "tabs",
-    "newtab",
+    "container",
     "privacy",
-    "productivity"
+    "search",
+    "dark mode",
+    "security"
   ],
   "homepage": "https://github.com/melkorCBA/fox-launch",
   "support_url": "https://github.com/melkorCBA/fox-launch/issues"
