@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project skill `/create-pr` with automated listing impact analysis.
 - Pull request CI verification workflow (`.github/workflows/ci.yml`) gating merges on build, lint, test, and metadata validation passes.
 - Project skill `/create-release` to guide version selection, changelog updates, and safe AMO release tagging.
-- Automated publishing of built add-on to GitHub Packages (`@melkorCBA/fox-launch`) during releases.
+- Automated publishing of built add-on to GitHub Packages (`@melkorcba/fox-launch`) during releases.
 
 ## [1.0.0] - 2026-10-25
 
