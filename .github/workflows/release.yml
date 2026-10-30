@@ -74,6 +74,8 @@ jobs:
         run: pnpm exec playwright install firefox
 
       - name: Run E2E Test Suite
+        env:
+          PLAYWRIGHT_WORKERS: 2
         run: pnpm run test:e2e
 
       - name: Package Extension & Source Code Archive
