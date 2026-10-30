@@ -1,0 +1,18 @@
+{
+  "categories": {
+    "firefox": [
+      "bookmarks",
+      "tabs"
+    ]
+  },
+  "tags": [
+    "containers",
+    "privacy",
+    "productivity",
+    "tabs",
+    "workspace",
+    "newtab"
+  ],
+  "homepage": "https://github.com/melkorCBA/fox-launch",
+  "support_url": "https://github.com/melkorCBA/fox-launch/issues"
+}

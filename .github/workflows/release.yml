@@ -1,0 +1,146 @@
+name: Release FoxLaunch
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run only (validate and build without submitting to AMO)'
+        type: boolean
+        default: false
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, Verify & Submit to AMO
+    runs-on: ubuntu-latest
+    outputs:
+      listing_changed: ${{ steps.check_listing_diff.outputs.listing_changed }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Verify Version Parity
+        id: version_check
+        run: |
+          REF_TAG="${{ github.ref_name }}"
+          TAG_VERSION="${REF_TAG#v}"
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
+
+          echo "Tag version:      $TAG_VERSION"
+          echo "Package version:  $PACKAGE_VERSION"
+          echo "Manifest version: $MANIFEST_VERSION"
+
+          # On tag push, strictly verify all match
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            if [[ "$TAG_VERSION" != "$PACKAGE_VERSION" || "$TAG_VERSION" != "$MANIFEST_VERSION" ]]; then
+              echo "❌ Error: Version mismatch! Tag ($TAG_VERSION), package.json ($PACKAGE_VERSION), and manifest.json ($MANIFEST_VERSION) must match."
+              exit 1
+            fi
+          fi
+
+          echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript Check
+        run: pnpm run typecheck
+
+      - name: Build Extension
+        run: pnpm run build
+
+      - name: Lint Extension with web-ext
+        run: pnpm run lint:ext
+
+      - name: Install Playwright Firefox
+        run: pnpm exec playwright install firefox
+
+      - name: Run E2E Test Suite
+        run: pnpm run test:e2e
+
+      - name: Package Extension & Source Code Archive
+        run: |
+          mkdir -p web-ext-artifacts
+          pnpm exec web-ext build --source-dir dist --artifacts-dir web-ext-artifacts --overwrite-dest
+          git archive --format=zip --output=web-ext-artifacts/foxlaunch-source.zip HEAD
+
+      - name: Extract Release Notes from CHANGELOG
+        run: |
+          node scripts/parse-changelog.mjs "${{ steps.version_check.outputs.version }}" --output release-notes.md
+          echo "--- Release Notes ---"
+          cat release-notes.md
+
+      - name: Submit to Mozilla Add-ons (AMO)
+        if: ${{ inputs.dry_run != true }}
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: |
+          if [[ -z "$AMO_JWT_ISSUER" || -z "$AMO_JWT_SECRET" ]]; then
+            echo "❌ Error: AMO_JWT_ISSUER and AMO_JWT_SECRET must be configured in repository secrets."
+            exit 1
+          fi
+
+          pnpm exec web-ext sign \
+            --source-dir dist \
+            --artifacts-dir web-ext-artifacts \
+            --api-key "$AMO_JWT_ISSUER" \
+            --api-secret "$AMO_JWT_SECRET" \
+            --channel listed \
+            --upload-source-code web-ext-artifacts/foxlaunch-source.zip
+
+      - name: Create GitHub Release
+        if: ${{ inputs.dry_run != true && github.ref_type == 'tag' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          files: |
+            web-ext-artifacts/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for Listing Metadata Changes
+        id: check_listing_diff
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          echo "Previous tag: '$PREV_TAG'"
+
+          if [ -n "$PREV_TAG" ]; then
+            CHANGED=$(git diff --name-only "$PREV_TAG" HEAD -- metadata/amo/ || echo "")
+            if [ -n "$CHANGED" ]; then
+              echo "Listing files changed since $PREV_TAG:"
+              echo "$CHANGED"
+              echo "listing_changed=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "No listing changes detected since $PREV_TAG."
+              echo "listing_changed=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "No previous tag found; first release."
+            echo "listing_changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  sync-listing:
+    name: Sync Product Listing
+    needs: release
+    if: ${{ needs.release.outputs.listing_changed == 'true' && inputs.dry_run != true }}
+    uses: ./.github/workflows/sync-listing.yml
+    secrets: inherit
