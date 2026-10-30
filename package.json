@@ -1,10 +1,24 @@
 {
-  "name": "foxlaunch",
+  "name": "@melkorCBA/fox-launch",
   "version": "1.0.0",
   "description": "Container-aware New Tab workspace launchpad for Firefox Multi-Account Containers",
   "type": "module",
   "license": "MIT",
   "packageManager": "pnpm@9.15.4",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/melkorCBA/fox-launch.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "dist",
+    "web-ext-artifacts",
+    "manifest.json",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "dev": "vite",
     "typecheck": "tsc --noEmit",

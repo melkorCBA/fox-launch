@@ -95,6 +95,27 @@ pnpm run test:e2e
 
 ---
 
+## 📦 GitHub Packages
+
+Production extension builds are published to [GitHub Packages](https://github.com/melkorCBA/fox-launch/packages).
+
+### Installing the Package
+To consume the built assets via npm or pnpm, configure your `.npmrc` to route the `@melkorCBA` scope to GitHub Packages:
+
+```ini
+@melkorCBA:registry=https://npm.pkg.github.com
+```
+
+Then install the package:
+```bash
+npm install @melkorCBA/fox-launch
+# or
+pnpm add @melkorCBA/fox-launch
+```
+The package contains the production `dist/` extension bundle, `manifest.json`, and pre-packaged `.zip` archives.
+
+---
+
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).

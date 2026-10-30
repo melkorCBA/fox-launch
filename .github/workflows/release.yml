@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   release:
@@ -119,6 +120,17 @@ jobs:
             web-ext-artifacts/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to GitHub Packages
+        if: ${{ github.ref_type == 'tag' || inputs.dry_run == true }}
+        run: |
+          pnpm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "Dry run: validating npm package publishing..."
+            pnpm publish --dry-run --no-git-checks
+          else
+            pnpm publish --no-git-checks
+          fi
 
       - name: Check for Listing Metadata Changes
         id: check_listing_diff
