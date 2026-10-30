@@ -1,0 +1,45 @@
+name: Sync AMO Product Listing
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run only (validate without publishing to AMO)'
+        type: boolean
+        default: false
+        required: false
+  workflow_call:
+    inputs:
+      dry_run:
+        type: boolean
+        default: false
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync-listing:
+    name: Sync Store Listing to Mozilla Add-ons
+    runs-on: ubuntu-latest
+    environment: production-amo
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Sync AMO Store Listing
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+          AMO_ADDON_ID: ${{ secrets.AMO_ADDON_ID }}
+        run: |
+          DRY_RUN_FLAG=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+          node scripts/sync-amo-listing.mjs $DRY_RUN_FLAG

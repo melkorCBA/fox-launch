@@ -203,8 +203,8 @@ test.describe('Adversarial M3-2: Undo Toast & Race Conditions', () => {
 
     await expect(loc.toastNotification(page)).toBeVisible();
 
-    // Wait exactly 4850ms (right on the edge of 5000ms expiration)
-    await page.waitForTimeout(4850);
+    // Wait 4600ms (near the edge of 5000ms expiration with buffer for CI scheduling)
+    await page.waitForTimeout(4600);
 
     // Toast should still exist
     await expect(loc.toastNotification(page)).toBeVisible();

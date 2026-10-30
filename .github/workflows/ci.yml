@@ -1,0 +1,54 @@
+name: CI Verification
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - release
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Build, Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript Check
+        run: pnpm run typecheck
+
+      - name: Build Production Extension
+        run: pnpm run build
+
+      - name: Lint Extension with web-ext
+        run: pnpm run lint:ext
+
+      - name: Install Playwright Firefox
+        run: pnpm exec playwright install firefox
+
+      - name: Run E2E Test Suite
+        env:
+          PLAYWRIGHT_WORKERS: ${{ vars.PLAYWRIGHT_WORKERS || '1' }}
+        run: pnpm run test:e2e
+
+      - name: Validate Store Listing Metadata
+        run: node scripts/sync-amo-listing.mjs --dry-run

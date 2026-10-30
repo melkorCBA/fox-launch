@@ -4,6 +4,7 @@
   "description": "Container-aware New Tab workspace launchpad for Firefox Multi-Account Containers",
   "type": "module",
   "license": "MIT",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "vite",
     "typecheck": "tsc --noEmit",

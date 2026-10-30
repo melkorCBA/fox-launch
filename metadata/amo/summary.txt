@@ -1,0 +1,1 @@
+Container-aware New Tab launchpad for Firefox Multi-Account Containers. Organize shortcuts into isolated container swimlanes with 1-click dispatch, sub-10ms render, and zero network tracking.
