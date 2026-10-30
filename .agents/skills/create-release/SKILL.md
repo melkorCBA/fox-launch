@@ -47,11 +47,15 @@ Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozil
    ```powershell
    node -p "require('./package.json').version"
    ```
-2. Analyze the merged commit subjects and the `[Unreleased]` section of `CHANGELOG.md`:
-   - If commits contain breaking changes (`BREAKING CHANGE` or `!:`): recommend **Major** (e.g. `1.0.0` → `2.0.0`).
-   - If commits contain `feat`: recommend **Minor** (e.g. `1.0.0` → `1.1.0`).
-   - If only `fix` / `chore` / `docs`: recommend **Patch** (e.g. `1.0.0` → `1.0.1`).
-3. **Decision Point 2: Select Version Bump**
+2. Inspect full commit messages (including bodies and footers) of the new commits:
+   ```powershell
+   git log release..origin/main
+   ```
+3. Analyze the full commits and the `[Unreleased]` section of `CHANGELOG.md`:
+   - If commits or footers contain breaking changes (`BREAKING CHANGE:` or `<type>!:`): recommend **Major** (e.g. `1.0.0` → `2.0.0`).
+   - If commits contain `feat:` or `feat(...)`: recommend **Minor** (e.g. `1.0.0` → `1.1.0`).
+   - If only `fix:`, `chore:`, or `docs:`: recommend **Patch** (e.g. `1.0.0` → `1.0.1`).
+4. **Decision Point 2: Select Version Bump**
    Prompt the user via `ask_question` with the recommended version and alternatives.
 
 ---
@@ -68,14 +72,20 @@ Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozil
      ## [<new-version>] - YYYY-MM-DD
      ```
    - Leave an empty `## [Unreleased]` template above it for future work.
-4. Check if store listing files changed:
+4. Check if store listing files changed relative to the previous release tag:
    ```powershell
-   git diff --name-only origin/release HEAD -- metadata/amo/
+   $PREV_TAG = (git describe --tags --abbrev=0 2>$null)
+   if ($PREV_TAG) {
+     $CHANGED = git diff --name-only "$PREV_TAG" HEAD -- metadata/amo/
+   } else {
+     # First release: release workflow always syncs store listing
+     $CHANGED = "First release baseline"
+   }
    ```
 5. **Decision Point 3: Review Release Notes & Listing Impact**
    Present the release notes in chat:
    - Display the bullet points that will be submitted to the AMO Version History and GitHub Release.
-   - Note whether `metadata/amo/` was modified (which will trigger a product page listing sync upon approval).
+   - Note whether `metadata/amo/` was modified relative to `$PREV_TAG` (which will trigger a product page listing sync upon approval).
    - Ask user: *"Do these release notes look accurate, or would you like to make any adjustments?"*
 
 ---
@@ -101,6 +111,7 @@ node scripts/sync-amo-listing.mjs --dry-run
      - New Version:   v<version>
      - Release Tag:   v<version>
      - Commit:        chore(release): prepare v<version>
+     - Push command:  git push --atomic origin release "refs/tags/v<version>"
 
    Proceed? (yes/no)
    ```
@@ -109,8 +120,8 @@ node scripts/sync-amo-listing.mjs --dry-run
    git add package.json manifest.json CHANGELOG.md metadata/
    git commit -m "chore(release): prepare v<version>"
    git tag -a "v<version>" -m "Release v<version>"
-   git push origin release
-   git push origin "v<version>"
+   # Push branch and tag atomically so a rejected branch push cannot publish the tag:
+   git push --atomic origin release "refs/tags/v<version>"
    ```
 3. Report the triggered GitHub Actions workflow run:
    - Provide the run link for `.github/workflows/release.yml`.
