@@ -171,7 +171,7 @@ function captureScreenshotsWithPlaywright(scenes) {
   execSync(cmd, { stdio: 'inherit', cwd: rootDir });
 }
 
-function pruneScreenshots(activeScenes) {
+function enforceScreenshotLimitAndPrune(activeScenes) {
   const screenshotsDir = path.resolve(rootDir, 'metadata/amo/screenshots');
   if (!fs.existsSync(screenshotsDir)) return;
 
@@ -180,18 +180,45 @@ function pruneScreenshots(activeScenes) {
 
   for (const file of files) {
     if (!file.endsWith('.png')) continue;
-    // Remove legacy 1280x800 or unselected scenes if pruning requested
-    if (file.includes('1280x800') || (shouldPrune && !activeFilenames.has(file))) {
+    // Always remove legacy 1280x800 screenshots
+    if (file.includes('1280x800')) {
       const filePath = path.join(screenshotsDir, file);
       fs.unlinkSync(filePath);
-      console.log(`✂ Pruned redundant screenshot: ${file}`);
+      console.log(`✂ Pruned legacy screenshot: ${file}`);
+    } else if (shouldPrune && !activeFilenames.has(file)) {
+      const filePath = path.join(screenshotsDir, file);
+      fs.unlinkSync(filePath);
+      console.log(`✂ Pruned unselected screenshot: ${file}`);
     }
   }
 
-  // Enforce max 5 constraint
-  const remaining = fs.readdirSync(screenshotsDir).filter((f) => f.endsWith('.png'));
+  // Check inventory count against AMO limits
+  let remaining = fs.readdirSync(screenshotsDir).filter((f) => f.endsWith('.png'));
+
   if (remaining.length > AMO_MAX_SCREENSHOTS) {
-    console.warn(`[Warning] Total screenshots (${remaining.length}) exceeds AMO maximum of ${AMO_MAX_SCREENSHOTS}!`);
+    if (shouldPrune) {
+      // Prioritize preserving dark and light themes, then prune excess files
+      const priorityOrder = ['foxlaunch-dark-2400x1800.png', 'foxlaunch-light-2400x1800.png'];
+      const nonPriority = remaining.filter((f) => !priorityOrder.includes(f));
+      while (remaining.length > AMO_MAX_SCREENSHOTS && nonPriority.length > 0) {
+        const toRemove = nonPriority.pop();
+        fs.unlinkSync(path.join(screenshotsDir, toRemove));
+        console.log(`✂ Pruned excess supplemental screenshot to respect AMO limit: ${toRemove}`);
+        remaining = fs.readdirSync(screenshotsDir).filter((f) => f.endsWith('.png'));
+      }
+    } else {
+      throw new Error(
+        `[AMO Violation] Total screenshots in ${path.relative(rootDir, screenshotsDir)} is ${remaining.length}, which exceeds the AMO limit of ${AMO_MAX_SCREENSHOTS}.\n` +
+        `Existing screenshots: ${remaining.join(', ')}\n` +
+        `Please rerun with '--prune' to automatically remove excess supplemental screenshots, or manually delete redundant files.`
+      );
+    }
+  }
+
+  if (remaining.length > AMO_MAX_SCREENSHOTS) {
+    throw new Error(
+      `[AMO Violation] Unable to reduce screenshots to <= ${AMO_MAX_SCREENSHOTS}. Current count: ${remaining.length}`
+    );
   }
 }
 
@@ -209,10 +236,16 @@ async function main() {
   }
 
   captureScreenshotsWithPlaywright(selectedScenes);
-  pruneScreenshots(selectedScenes);
+  enforceScreenshotLimitAndPrune(selectedScenes);
 
   const screenshotsDir = path.resolve(rootDir, 'metadata/amo/screenshots');
   const finalFiles = fs.readdirSync(screenshotsDir).filter((f) => f.endsWith('.png'));
+
+  if (finalFiles.length > AMO_MAX_SCREENSHOTS) {
+    throw new Error(
+      `[AMO Violation] Screenshot count (${finalFiles.length}) exceeds the maximum allowed by AMO (${AMO_MAX_SCREENSHOTS}).`
+    );
+  }
 
   console.log(`\n🎉 AMO Asset pipeline completed! Current screenshots (${finalFiles.length}/${AMO_MAX_SCREENSHOTS}):`);
   for (const f of finalFiles) {
@@ -222,6 +255,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('\n❌ Error executing screenshot pipeline:', err);
+  console.error('\n❌ Error executing screenshot pipeline:', err.message || err);
   process.exit(1);
 });

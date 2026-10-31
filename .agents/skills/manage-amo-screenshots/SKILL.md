@@ -23,8 +23,8 @@ Automated agent skill to evaluate shipped features against Mozilla Add-ons (AMO)
 ### Step 1: Analyze Shipped Features & Commit Log
 
 1. Determine the relevant commit range:
-   - During release preparation: `release..origin/main` (or the specific commits selected for shipping).
-   - During feature branch development: `origin/main...HEAD`.
+   - **During release preparation:** Inspect the range between the pre-merge release SHA and the post-merge `HEAD` (`$PRE_MERGE_SHA..HEAD`), or the explicitly passed list of cherry-picked commit SHAs. *(Note: Do NOT use `release..origin/main` after the merge has already completed, as `origin/main` is already merged into `release` and the range would be empty).*
+   - **During feature branch development:** Inspect `origin/main...HEAD`.
 2. Inspect the commit messages and diffs for UI/visual impact:
    ```powershell
    git log --oneline <base>..<head>
@@ -74,6 +74,7 @@ Automated agent skill to evaluate shipped features against Mozilla Add-ons (AMO)
    - Regenerate the AMO Master Icon (`metadata/amo/assets/foxlaunch-icon-128.png`) and verify downscaled clarity at 64x64 and 32x32.
    - Launch Playwright in headless Firefox at 2400x1800 and capture the selected scenes.
    - Delete any unselected or obsolete screenshots.
+   - Strictly verify and enforce that final screenshots count is $\le 5$.
 
 ---
 
