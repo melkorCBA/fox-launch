@@ -224,7 +224,12 @@ export async function initializeApp(): Promise<void> {
         onSettingsChanged: async (updated) => {
           appSettings = updated;
           applyTheme(updated.theme);
-          mountSwimlanes(await getShortcuts());
+          const [refreshedContainers, refreshedShortcuts] = await Promise.all([
+            getContainers(),
+            getShortcuts(),
+          ]);
+          discoveredContainers = refreshedContainers;
+          mountSwimlanes(refreshedShortcuts);
         },
         onResetDefaults: async () => {
           await renderApp();

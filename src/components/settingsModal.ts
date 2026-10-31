@@ -232,16 +232,15 @@ export function openSettingsModal(
     filterControls.appendChild(legend);
 
     let visibility = activeSettings.containerVisibility;
-    let pendingSave = Promise.resolve();
-    const persistVisibility = () => {
+    const persistVisibility = async () => {
       const snapshot = { ...visibility, cookieStoreIds: [...visibility.cookieStoreIds] };
-      pendingSave = pendingSave.then(async () => {
+      try {
         const updated = await saveSettings({ containerVisibility: snapshot });
         activeSettings.containerVisibility = snapshot;
         onSettingsChanged?.(updated);
-      }).catch((error) => {
+      } catch (error) {
         console.error('[FoxLaunch] Error saving container visibility:', error);
-      });
+      }
     };
 
     const createVisibilityOption = (mode: ContainerVisibility['mode'], label: string) => {
@@ -377,7 +376,6 @@ export function openSettingsModal(
     });
 
     confirmBtn.addEventListener('click', async () => {
-      await pendingSave;
       await resetToDefaults();
       document.documentElement.removeAttribute('data-theme');
       if (onResetDefaults) {

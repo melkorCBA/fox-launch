@@ -125,6 +125,23 @@ test.describe('Storage Service (browser.storage.local)', () => {
     expect(s2.swimlaneCollapse['firefox-container-2']).toBe(true);
   });
 
+  test('saveSettings serializes concurrent updates without dropping fields', async () => {
+    await Promise.all([
+      saveSettings({ theme: 'dark' }),
+      saveSettings({ tabBehavior: 'close' }),
+      saveSettings({
+        containerVisibility: { mode: 'only', cookieStoreIds: ['firefox-container-1'], namePatterns: ['Work*'] },
+      }),
+    ]);
+
+    const finalSettings = await getSettings();
+    expect(finalSettings.theme).toBe('dark');
+    expect(finalSettings.tabBehavior).toBe('close');
+    expect(finalSettings.containerVisibility.mode).toBe('only');
+    expect(finalSettings.containerVisibility.cookieStoreIds).toEqual(['firefox-container-1']);
+    expect(finalSettings.containerVisibility.namePatterns).toEqual(['Work*']);
+  });
+
   test('addShortcut generates id, timestamp, order, and domain', async () => {
     const item = await addShortcut('firefox-container-1', {
       title: 'GitHub',
