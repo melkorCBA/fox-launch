@@ -16,6 +16,7 @@ export const DEFAULT_SETTINGS: FoxLaunchSettings = {
   version: 1,
   tabBehavior: 'keep',
   theme: 'auto',
+  cardSize: 'medium',
   firstRunDismissed: false,
   swimlaneCollapse: {
     'firefox-default': true, // Collapsed by default per R1 & Pilot Plan §D6
@@ -215,6 +216,8 @@ export async function getSettings(): Promise<FoxLaunchSettings> {
       version: raw.version ?? DEFAULT_SETTINGS.version,
       tabBehavior: raw.tabBehavior ?? DEFAULT_SETTINGS.tabBehavior,
       theme: raw.theme ?? DEFAULT_SETTINGS.theme,
+      cardSize: raw.cardSize === 'small' || raw.cardSize === 'large'
+        ? raw.cardSize : DEFAULT_SETTINGS.cardSize,
       firstRunDismissed: raw.firstRunDismissed ?? DEFAULT_SETTINGS.firstRunDismissed,
       swimlaneCollapse: {
         ...DEFAULT_SETTINGS.swimlaneCollapse,
@@ -233,29 +236,37 @@ export async function getSettings(): Promise<FoxLaunchSettings> {
 /**
  * Persists partial settings updates merged with current settings.
  */
+let settingsSaveQueue: Promise<unknown> = Promise.resolve();
+
 export async function saveSettings(
   partialSettings: Partial<FoxLaunchSettings>
 ): Promise<FoxLaunchSettings> {
-  try {
-    const current = await getSettings();
-    const updated: FoxLaunchSettings = {
-      ...current,
-      ...partialSettings,
-      swimlaneCollapse: {
-        ...current.swimlaneCollapse,
-        ...(partialSettings.swimlaneCollapse || {}),
-      },
-    };
+  const executeSave = async (): Promise<FoxLaunchSettings> => {
+    try {
+      const current = await getSettings();
+      const updated: FoxLaunchSettings = {
+        ...current,
+        ...partialSettings,
+        swimlaneCollapse: {
+          ...current.swimlaneCollapse,
+          ...(partialSettings.swimlaneCollapse || {}),
+        },
+      };
 
-    if (typeof browser !== 'undefined' && browser.storage?.local) {
-      await browser.storage.local.set({ [STORAGE_KEYS.SETTINGS]: updated });
+      if (typeof browser !== 'undefined' && browser.storage?.local) {
+        await browser.storage.local.set({ [STORAGE_KEYS.SETTINGS]: updated });
+      }
+
+      return updated;
+    } catch (error) {
+      console.error('[FoxLaunch] Error saving settings:', error);
+      throw error;
     }
+  };
 
-    return updated;
-  } catch (error) {
-    console.error('[FoxLaunch] Error saving settings:', error);
-    throw error;
-  }
+  const nextSave = settingsSaveQueue.then(executeSave, executeSave);
+  settingsSaveQueue = nextSave.catch(() => {});
+  return nextSave;
 }
 
 /**

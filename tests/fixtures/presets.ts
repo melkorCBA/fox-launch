@@ -80,6 +80,7 @@ export const DEFAULT_SETTINGS: FoxLaunchSettings = {
   version: 1,
   tabBehavior: 'close',
   theme: 'auto',
+  cardSize: 'medium',
   firstRunDismissed: true, // Default to true in tests unless explicitly testing onboarding
   swimlaneCollapse: {
     'firefox-default': true, // Collapsed by default per pilot-plan §D6
@@ -91,6 +92,7 @@ export const ONBOARDING_SETTINGS: FoxLaunchSettings = {
   version: 1,
   tabBehavior: 'close',
   theme: 'auto',
+  cardSize: 'medium',
   firstRunDismissed: false, // Triggers onboarding walkthrough
   swimlaneCollapse: {
     'firefox-default': true,

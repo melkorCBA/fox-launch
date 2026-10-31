@@ -95,6 +95,7 @@ test.describe('Storage Service (browser.storage.local)', () => {
     expect(settings.version).toBe(1);
     expect(settings.tabBehavior).toBe('keep');
     expect(settings.theme).toBe('auto');
+    expect(settings.cardSize).toBe('medium');
     expect(settings.firstRunDismissed).toBe(false);
     expect(settings.swimlaneCollapse['firefox-default']).toBe(true);
     expect(settings.swimlaneOrder).toEqual([]);
@@ -107,6 +108,37 @@ test.describe('Storage Service (browser.storage.local)', () => {
     expect(updated.theme).toBe('dark');
     expect(updated.firstRunDismissed).toBe(false); // Preserved
     expect(updated.swimlaneCollapse['firefox-default']).toBe(true); // Preserved
+  });
+
+  test('getSettings defaults missing or invalid card sizes to medium', async () => {
+    for (const cardSize of [undefined, null, 'invalid']) {
+      mockState.store[STORAGE_KEYS.SETTINGS] = { theme: 'dark', cardSize };
+      const settings = await getSettings();
+      expect(settings.cardSize).toBe('medium');
+      expect(settings.theme).toBe('dark');
+    }
+  });
+
+  test('saveSettings persists each card size and preserves it in other updates', async () => {
+    for (const cardSize of ['small', 'medium', 'large'] as const) {
+      await saveSettings({ cardSize });
+      await saveSettings({ theme: 'dark', swimlaneCollapse: { 'firefox-container-1': true } });
+      const settings = await getSettings();
+      expect(settings.cardSize).toBe(cardSize);
+      expect(settings.theme).toBe('dark');
+      expect(settings.swimlaneCollapse['firefox-container-1']).toBe(true);
+    }
+  });
+
+  test('saveSettings serializes concurrent updates without discarding cardSize or theme', async () => {
+    await Promise.all([
+      saveSettings({ cardSize: 'small' }),
+      saveSettings({ theme: 'dark' }),
+    ]);
+
+    const finalSettings = await getSettings();
+    expect(finalSettings.cardSize).toBe('small');
+    expect(finalSettings.theme).toBe('dark');
   });
 
   test('saveSettings merges swimlaneCollapse dictionary without overwriting other containers', async () => {
@@ -250,7 +282,7 @@ test.describe('Storage Service (browser.storage.local)', () => {
 
   test('resetToDefaults clears shortcuts and resets settings preserving firstRunDismissed', async () => {
     await addShortcut('firefox-container-1', { title: 'Test', url: 'https://test.com' });
-    await saveSettings({ tabBehavior: 'close', theme: 'dark' });
+    await saveSettings({ tabBehavior: 'close', theme: 'dark', cardSize: 'large' });
 
     await resetToDefaults();
 
@@ -260,6 +292,7 @@ test.describe('Storage Service (browser.storage.local)', () => {
     const settings = await getSettings();
     expect(settings.tabBehavior).toBe('keep');
     expect(settings.theme).toBe('auto');
+    expect(settings.cardSize).toBe('medium');
     expect(settings.firstRunDismissed).toBe(true);
   });
 
