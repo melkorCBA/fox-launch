@@ -29,7 +29,7 @@ body {
 
 /* Accessibility Focus Indicators */
 :focus-visible {
-  outline: 2px solid var(--border-focus);
+  outline: 2px solid var(--focus-ring-active);
   outline-offset: 2px;
 }
 
@@ -58,6 +58,13 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: block;
 }
 
 .brand-title {
@@ -96,8 +103,8 @@ body {
 }
 
 .search-input:focus {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 1px var(--border-focus);
+  border-color: var(--focus-ring-active);
+  box-shadow: 0 0 0 1px var(--focus-ring-active);
 }
 
 .search-input::placeholder {
