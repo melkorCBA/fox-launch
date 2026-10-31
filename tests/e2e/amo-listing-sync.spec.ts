@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const root = process.cwd();
 const script = path.join(root, 'scripts/sync-amo-listing.mjs');
@@ -12,8 +13,22 @@ function runSync(dryRun = false, failure = '', invalidImage = false) {
   try {
     fs.cpSync(path.join(root, 'metadata/amo'), path.join(cwd, 'metadata/amo'), { recursive: true });
     if (invalidImage) {
-      fs.writeFileSync(path.join(cwd, 'metadata/amo/screenshots/foxlaunch-light-1280x800.png'), '');
+      // Signature-preserving truncated / invalid PNG (fails structure/IHDR check)
+      fs.writeFileSync(
+        path.join(cwd, 'metadata/amo/screenshots/foxlaunch-light-2400x1800.png'),
+        Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), Buffer.alloc(16, 0)])
+      );
     }
+    // Snapshot isolated temporary images before script execution
+    const snapshots = new Map();
+    for (const theme of ['dark', 'light']) {
+      const filename = `foxlaunch-${theme}-2400x1800.png`;
+      const filePath = path.join(cwd, 'metadata/amo/screenshots', filename);
+      if (fs.existsSync(filePath)) {
+        snapshots.set(filename, fs.readFileSync(filePath));
+      }
+    }
+
     const tracePath = path.join(cwd, 'requests.json');
     const mockPath = path.join(cwd, 'mock.mjs');
     fs.writeFileSync(mockPath, `
@@ -41,6 +56,16 @@ function runSync(dryRun = false, failure = '', invalidImage = false) {
         }
         if (failure === 'network' && options.method === 'POST') throw new Error('connection reset');
         if (options.method === 'GET') {
+          if (url.includes('/previews/')) {
+            if (failure === 'processing') {
+              return Response.json({ id: Number(url.split('/').at(-2)) });
+            }
+            return Response.json({
+              id: Number(url.split('/').at(-2)),
+              image_url: 'https://addons.mozilla.org/image.png',
+              thumbnail_url: 'https://addons.mozilla.org/thumb.png',
+            });
+          }
           return Response.json({ previews: [{ id: 11 }, { id: 12 }] });
         }
         if (options.method === 'POST') {
@@ -49,7 +74,7 @@ function runSync(dryRun = false, failure = '', invalidImage = false) {
         return new Response(null, { status: options.method === 'DELETE' ? 204 : 200 });
       };
     `);
-    const result = spawnSync(process.execPath, ['--import', mockPath, script, ...(dryRun ? ['--dry-run'] : [])], {
+    const result = spawnSync(process.execPath, ['--import', pathToFileURL(mockPath).href, script, ...(dryRun ? ['--dry-run'] : [])], {
       cwd,
       encoding: 'utf8',
       env: {
@@ -57,13 +82,16 @@ function runSync(dryRun = false, failure = '', invalidImage = false) {
         AMO_ADDON_ID: 'test/addon',
         AMO_JWT_ISSUER: dryRun ? '' : 'test-issuer',
         AMO_JWT_SECRET: dryRun ? '' : 'test-only-placeholder',
+        AMO_PREVIEW_TIMEOUT_MS: '200',
       },
     });
     const requests = fs.existsSync(tracePath) ? JSON.parse(fs.readFileSync(tracePath, 'utf8')) : [];
     const imagesUnchanged = ['dark', 'light'].every((theme) => {
-      const filename = `foxlaunch-${theme}-1280x800.png`;
-      return fs.readFileSync(path.join(cwd, 'metadata/amo/screenshots', filename))
-        .equals(fs.readFileSync(path.join(root, 'metadata/amo/screenshots', filename)));
+      const filename = `foxlaunch-${theme}-2400x1800.png`;
+      const currentPath = path.join(cwd, 'metadata/amo/screenshots', filename);
+      return fs.existsSync(currentPath) &&
+        snapshots.has(filename) &&
+        fs.readFileSync(currentPath).equals(snapshots.get(filename));
     });
     return { ...result, requests, imagesUnchanged };
   } finally {
@@ -77,8 +105,8 @@ test.describe('AMO listing screenshot sync', () => {
     expect(result.status, result.stderr).toBe(0);
     expect(result.requests).toEqual([]);
     expect(result.imagesUnchanged).toBe(true);
-    expect(result.stdout).toContain('foxlaunch-dark-1280x800.png');
-    expect(result.stdout).toContain('foxlaunch-light-1280x800.png');
+    expect(result.stdout).toContain('foxlaunch-dark-2400x1800.png');
+    expect(result.stdout).toContain('foxlaunch-light-2400x1800.png');
     expect(result.stdout).toContain('No changes sent to AMO');
   });
 
@@ -94,26 +122,26 @@ test.describe('AMO listing screenshot sync', () => {
     expect(result.status, result.stderr).toBe(0);
     expect(result.imagesUnchanged).toBe(true);
     expect(result.requests.map((request: { method: string }) => request.method))
-      .toEqual(['GET', 'POST', 'POST', 'PATCH', 'DELETE', 'DELETE']);
+      .toEqual(['GET', 'POST', 'POST', 'GET', 'GET', 'PATCH', 'DELETE', 'DELETE']);
     for (const [position, theme] of ['dark', 'light'].entries()) {
       const request = result.requests[position + 1];
       expect(request.url).toBe('https://addons.mozilla.org/api/v5/addons/addon/test%2Faddon/previews/');
-      expect(request.image.name).toBe(`foxlaunch-${theme}-1280x800.png`);
+      expect(request.image.name).toBe(`foxlaunch-${theme}-2400x1800.png`);
       expect(request.image.type).toBe('image/png');
       expect(request.image.size).toBeGreaterThan(24);
       expect(request.position).toBe(String(position));
       expect(request.contentType).toBeUndefined();
       expect(request.redirect).toBe('error');
     }
-    expect(result.requests[3].payload.summary['en-US']).toBeTruthy();
-    expect(result.requests[4].url).toContain('/previews/11/');
-    expect(result.requests[5].url).toContain('/previews/12/');
+    expect(result.requests[5].payload.summary['en-US']).toBeTruthy();
+    expect(result.requests[6].url).toContain('/previews/11/');
+    expect(result.requests[7].url).toContain('/previews/12/');
   });
 
   test('upload failure preserves old previews and rolls back the first new upload', () => {
     const result = runSync(false, 'upload');
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain('Upload screenshot foxlaunch-light-1280x800.png');
+    expect(result.stderr).toContain('Upload screenshot foxlaunch-light-2400x1800.png');
     expect(result.stderr).toContain('503');
     expect(result.requests.map((request: { method: string }) => request.method))
       .toEqual(['GET', 'POST', 'POST', 'DELETE']);
@@ -128,13 +156,14 @@ test.describe('AMO listing screenshot sync', () => {
       .toEqual(['101', '102']);
   });
 
-  for (const failure of ['network', 'invalid-id', 'rollback', 'cleanup']) {
+  for (const failure of ['network', 'invalid-id', 'processing', 'rollback', 'cleanup']) {
     test(`surfaces ${failure} failures clearly`, () => {
       const result = runSync(false, failure);
       expect(result.status).toBe(1);
       expect(result.stderr).toContain('Listing/screenshot sync failed');
       if (failure === 'network') expect(result.stderr).toContain('connection reset');
       if (failure === 'invalid-id') expect(result.stderr).toContain('valid preview ID');
+      if (failure === 'processing') expect(result.stderr).toContain('processing timed out');
       if (failure === 'rollback') expect(result.stderr).toContain('Screenshot rollback failed');
       if (failure === 'cleanup') {
         expect(result.stderr).toContain('old screenshot cleanup is incomplete');
@@ -148,6 +177,8 @@ test.describe('AMO listing screenshot sync', () => {
     expect(workflow).toContain('environment: production-amo');
     expect(workflow).toContain('DRY_RUN_FLAG="--dry-run"');
     expect(workflow).toContain('node scripts/sync-amo-listing.mjs');
+    expect(workflow).toContain('concurrency:');
+    expect(workflow).toContain('cancel-in-progress: false');
     expect(workflow).not.toContain('capture-amo-screenshots');
     expect(workflow).not.toContain('playwright');
     expect(workflow).not.toContain('pnpm');
