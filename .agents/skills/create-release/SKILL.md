@@ -34,11 +34,22 @@ Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozil
    ```powershell
    git log --oneline release..origin/main
    ```
-3. **Decision Point 1: Merge Confirmation**
+3. Record the pre-merge release HEAD SHA so post-merge comparisons can accurately identify the shipped changes:
+   ```powershell
+   $PRE_MERGE_SHA = (git rev-parse HEAD)
+   ```
+4. **Decision Point 1: Merge Confirmation**
    Present the list of new commits from `main` and ask the user via `ask_question`:
    - `(Recommended) Merge all latest commits from main`
    - `Cherry-pick specific commits`
-4. Execute the chosen strategy (e.g. `git merge origin/main --no-edit`).
+5. Execute the chosen strategy:
+   - If merging all commits: `git merge origin/main --no-edit`
+   - If cherry-picking: cherry-pick the selected commits.
+6. **Launch Background AMO Screenshot Manager Agent:**
+   Immediately after executing the merge/cherry-pick, launch a background subagent invoking the `manage-amo-screenshots` skill:
+   - Pass the pre-merge SHA (`$PRE_MERGE_SHA`) and the post-merge `HEAD` (or the explicit list of cherry-picked commit SHAs):
+     `manage-amo-screenshots: inspect range $PRE_MERGE_SHA..HEAD`
+   - The subagent runs concurrently in the background while the release workflow continues with Step 3 (Version Calculation) and Step 4 (Changelog Preparation).
 
 ---
 
@@ -47,9 +58,9 @@ Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozil
    ```powershell
    node -p "require('./package.json').version"
    ```
-2. Inspect full commit messages (including bodies and footers) of the new commits adhering to Conventional Commits:
+2. Inspect full commit messages (including bodies and footers) of the newly shipped commits:
    ```powershell
-   git log release..origin/main
+   git log "$PRE_MERGE_SHA..HEAD"
    ```
 3. Analyze the full commits and the `[Unreleased]` section of `CHANGELOG.md`:
    - If commits or footers contain breaking changes (`BREAKING CHANGE:` or `<type>!:`): recommend **Major** (e.g. `1.0.0` → `2.0.0`).
@@ -79,20 +90,27 @@ Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozil
      ## [<new-version>] - YYYY-MM-DD
      ```
    - Leave an empty `## [Unreleased]` template above it for future work.
-4. Check if store listing files changed relative to the previous release tag:
-   ```powershell
-   $PREV_TAG = (git describe --tags --abbrev=0 2>$null)
-   if ($PREV_TAG) {
-     $CHANGED = git diff --name-only "$PREV_TAG" HEAD -- metadata/amo/
-   } else {
-     # First release: release workflow always syncs store listing
-     $CHANGED = "First release baseline"
-   }
-   ```
+4. **Await Screenshot Agent & Check Listing Impact:**
+   - Ensure the background `manage-amo-screenshots` agent has completed its execution.
+   - Check if store listing or visual asset files changed relative to the previous release tag, comparing against the working tree (staged, unstaged, and untracked metadata files):
+     ```powershell
+     $PREV_TAG = (git describe --tags --abbrev=0 2>$null)
+     if ($PREV_TAG) {
+       # Compare previous tag against working tree (staged and unstaged)
+       $CHANGED_TRACKED = (git diff --name-only "$PREV_TAG" -- metadata/amo/)
+       # Include any newly generated untracked metadata files (screenshots, icons)
+       $CHANGED_UNTRACKED = (git ls-files --others --exclude-standard metadata/amo/)
+       $CHANGED = @($CHANGED_TRACKED; $CHANGED_UNTRACKED) | Where-Object { $_ } | Select-Object -Unique
+     } else {
+       # First release: release workflow always syncs store listing
+       $CHANGED = "First release baseline"
+     }
+     ```
 5. **Decision Point 3: Review Release Notes & Listing Impact**
    Present the release notes in chat:
    - Display the bullet points that will be submitted to the AMO Version History and GitHub Release.
    - Note whether `metadata/amo/` was modified relative to `$PREV_TAG` (which will trigger a product page listing sync upon approval).
+   - Display any screenshot additions or pruning reported by `manage-amo-screenshots`.
    - Ask user: *"Do these release notes look accurate, or would you like to make any adjustments?"*
 
 ---
