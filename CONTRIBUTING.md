@@ -105,19 +105,16 @@ For the full release steps and approval gates, see [`.agents/skills/create-relea
 
 ### Screenshot updates
 
-The **Sync AMO Product Listing** workflow refreshes screenshots before syncing, including when called by a release. It installs Playwright Firefox and runs `node scripts/capture-amo-screenshots.mjs`, which reuses the brand-guide E2E capture scenario for dark and light themes with mock data and renders the hero banner. Capture failure stops the workflow before any AMO requests.
+The **Sync AMO Product Listing** workflow uploads the existing dark and light screenshots committed under `metadata/amo/screenshots/`, including when called by a release. Screenshot generation is handled separately by the release skill. The sync workflow does not capture or regenerate images, install Playwright, or alter local listing assets. Missing or invalid PNG screenshots stop syncing before any AMO requests.
 
 For a local preview from the repository root:
 
 ```bash
-pnpm install --frozen-lockfile
-pnpm exec playwright install --with-deps firefox
-node scripts/capture-amo-screenshots.mjs
 node scripts/sync-amo-listing.mjs --dry-run
 ```
 
-Review the generated images and listing diff before committing any `metadata/amo/` changes. The workflow retains the `production-amo` environment approval gate; it does not commit generated images. Dispatch it with `dry_run: true` to capture and validate the screenshots and print the proposed metadata and image filenames without authenticating or sending any requests to AMO.
+Review the images and listing diff before committing any `metadata/amo/` changes. The workflow retains the `production-amo` environment approval gate. Dispatch it with `dry_run: true` to validate the existing screenshots and print the proposed metadata and image filenames without modifying images, authenticating, or sending any requests to AMO.
 
-Live sync uploads the two screenshots in dark/light order using AMO's multipart preview API, updates the listing metadata, then removes the previous previews so repeated syncs do not accumulate duplicates. The hero banner is generated locally but is not a listing screenshot and is not uploaded. Upload or metadata failures leave previous previews in place and attempt to roll back new uploads. All API and cleanup failures fail the workflow explicitly; if rollback or old-preview cleanup fails, inspect the AMO listing before retrying. AMO does not provide an atomic listing-and-preview update.
+Live sync uploads the two committed screenshots in dark/light order using AMO's multipart preview API, updates the listing metadata, then removes the previous previews so repeated syncs do not accumulate duplicates. The hero banner under `metadata/amo/assets/` is not a listing screenshot and is not uploaded. Upload or metadata failures leave previous previews in place and attempt to roll back new uploads. All API and cleanup failures fail the workflow explicitly; if rollback or old-preview cleanup fails, inspect the AMO listing before retrying. AMO does not provide an atomic listing-and-preview update.
 
 These network operations are limited to publishing automation; the extension remains local-only.

@@ -60,7 +60,12 @@ function runSync(dryRun = false, failure = '', invalidImage = false) {
       },
     });
     const requests = fs.existsSync(tracePath) ? JSON.parse(fs.readFileSync(tracePath, 'utf8')) : [];
-    return { ...result, requests };
+    const imagesUnchanged = ['dark', 'light'].every((theme) => {
+      const filename = `foxlaunch-${theme}-1280x800.png`;
+      return fs.readFileSync(path.join(cwd, 'metadata/amo/screenshots', filename))
+        .equals(fs.readFileSync(path.join(root, 'metadata/amo/screenshots', filename)));
+    });
+    return { ...result, requests, imagesUnchanged };
   } finally {
     fs.rmSync(cwd, { recursive: true, force: true });
   }
@@ -71,6 +76,7 @@ test.describe('AMO listing screenshot sync', () => {
     const result = runSync(true);
     expect(result.status, result.stderr).toBe(0);
     expect(result.requests).toEqual([]);
+    expect(result.imagesUnchanged).toBe(true);
     expect(result.stdout).toContain('foxlaunch-dark-1280x800.png');
     expect(result.stdout).toContain('foxlaunch-light-1280x800.png');
     expect(result.stdout).toContain('No changes sent to AMO');
@@ -86,6 +92,7 @@ test.describe('AMO listing screenshot sync', () => {
   test('uploads multipart images in order before updating metadata and removing old previews', () => {
     const result = runSync();
     expect(result.status, result.stderr).toBe(0);
+    expect(result.imagesUnchanged).toBe(true);
     expect(result.requests.map((request: { method: string }) => request.method))
       .toEqual(['GET', 'POST', 'POST', 'PATCH', 'DELETE', 'DELETE']);
     for (const [position, theme] of ['dark', 'light'].entries()) {
@@ -136,22 +143,14 @@ test.describe('AMO listing screenshot sync', () => {
     });
   }
 
-  test('workflow captures before sync and retains approval and dry-run gates', () => {
+  test('workflow syncs existing images without capture and retains approval and dry-run gates', () => {
     const workflow = fs.readFileSync(path.join(root, '.github/workflows/sync-listing.yml'), 'utf8');
     expect(workflow).toContain('environment: production-amo');
     expect(workflow).toContain('DRY_RUN_FLAG="--dry-run"');
-    expect(workflow.indexOf('node scripts/capture-amo-screenshots.mjs'))
-      .toBeLessThan(workflow.indexOf('node scripts/sync-amo-listing.mjs'));
+    expect(workflow).toContain('node scripts/sync-amo-listing.mjs');
+    expect(workflow).not.toContain('capture-amo-screenshots');
+    expect(workflow).not.toContain('playwright');
+    expect(workflow).not.toContain('pnpm');
     expect(workflow).not.toContain('continue-on-error');
-  });
-
-  test('shared capture command fails clearly when the screenshot runner is unavailable', () => {
-    const result = spawnSync(process.execPath, [path.join(root, 'scripts/capture-amo-screenshots.mjs')], {
-      cwd: root,
-      encoding: 'utf8',
-      env: { ...process.env, PATH: '' },
-    });
-    expect(result.status).toBe(1);
-    expect(result.stderr).toContain('AMO screenshot capture failed');
   });
 });

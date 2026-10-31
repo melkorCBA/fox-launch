@@ -91,7 +91,7 @@ const screenshots = [
   'foxlaunch-light-1280x800.png',
 ].map((filename) => {
   const screenshotPath = path.join(metadataDir, 'screenshots', filename);
-  if (!fs.existsSync(screenshotPath)) fail(`Missing screenshot: ${screenshotPath}. Run node scripts/capture-amo-screenshots.mjs first.`);
+  if (!fs.existsSync(screenshotPath)) fail(`Missing screenshot: ${screenshotPath}. Prepare and commit the listing screenshots using the release skill before syncing.`);
   const image = fs.readFileSync(screenshotPath);
   if (image.length < 24 || !image.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) {
     fail(`Invalid PNG screenshot: ${screenshotPath}`);
