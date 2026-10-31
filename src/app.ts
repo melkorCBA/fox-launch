@@ -1,8 +1,8 @@
 /**
- * FoxLaunch — Application Entry Point & Controller
+ * FoxLaunch — Main Application Controller (Vite / TypeScript Entry)
  *
- * Bootstraps container auto-discovery, shortcut persistence, search filtering,
- * modal dialogs, reactive system theme listener, and manages sub-100ms dashboard mounting.
+ * Orchestrates container discovery, storage retrieval, reactive theming,
+ * swimlane mounting, keyboard navigation, and modal dialogues.
  */
 
 import './styles/themes.css';
@@ -13,8 +13,9 @@ import './styles/onboarding.css';
 
 import type { ContainerContext, ShortcutItem, FoxLaunchSettings, ThemeMode } from './types';
 import { getContainers } from './services/containers';
-import { getShortcuts, getSettings, addShortcut, updateShortcut, deleteShortcut, saveShortcuts } from './services/storage';
+import { getShortcuts, getSettings, addShortcut, updateShortcut, deleteShortcut, saveShortcuts, saveSettings } from './services/storage';
 import { renderSwimlane, type SwimlaneCallbacks } from './components/swimlane';
+import { setupSwimlaneReordering } from './components/dragDrop';
 import { initSearch, type SearchController } from './components/search';
 import { openShortcutModal } from './components/modal';
 import { openSettingsModal } from './components/settingsModal';
@@ -25,57 +26,37 @@ import { isContainerVisible } from './utils/containerVisibility';
 let searchController: SearchController | null = null;
 let appSettings: FoxLaunchSettings;
 let discoveredContainers: ContainerContext[] = [];
+let swimlaneReorderingInitialized = false;
+let lastMountedVisibility = '';
 
 let themeMediaQueryList: MediaQueryList | null = null;
 let themeChangeHandler: ((e: MediaQueryListEvent) => void) | null = null;
 
-/**
- * Applies the appearance theme to the document root element
- * and manages the reactive prefers-color-scheme media query listener.
- */
 export function applyTheme(theme: ThemeMode): void {
-  // Clean up any existing media query listener
+  const root = document.documentElement;
+
   if (themeMediaQueryList && themeChangeHandler) {
-    if (typeof themeMediaQueryList.removeEventListener === 'function') {
-      themeMediaQueryList.removeEventListener('change', themeChangeHandler);
-    } else if (typeof (themeMediaQueryList as any).removeListener === 'function') {
-      (themeMediaQueryList as any).removeListener(themeChangeHandler);
-    }
+    themeMediaQueryList.removeEventListener('change', themeChangeHandler);
     themeMediaQueryList = null;
     themeChangeHandler = null;
   }
 
-  if (theme === 'dark') {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else if (theme === 'light') {
-    document.documentElement.setAttribute('data-theme', 'light');
+  if (theme === 'auto') {
+    root.removeAttribute('data-theme');
+    themeMediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
+    themeChangeHandler = (e: MediaQueryListEvent) => {
+      document.body.classList.toggle('prefers-dark', e.matches);
+    };
+    themeMediaQueryList.addEventListener('change', themeChangeHandler);
+    document.body.classList.toggle('prefers-dark', themeMediaQueryList.matches);
   } else {
-    // 'auto': clear override so CSS media queries apply
-    document.documentElement.removeAttribute('data-theme');
-
-    // Attach dynamic listener for system preference change
-    if (typeof window !== 'undefined' && window.matchMedia) {
-      themeMediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
-      themeChangeHandler = (_e: MediaQueryListEvent) => {
-        if (appSettings?.theme === 'auto') {
-          document.documentElement.removeAttribute('data-theme');
-        }
-      };
-
-      if (typeof themeMediaQueryList.addEventListener === 'function') {
-        themeMediaQueryList.addEventListener('change', themeChangeHandler);
-      } else if (typeof (themeMediaQueryList as any).addListener === 'function') {
-        (themeMediaQueryList as any).addListener(themeChangeHandler);
-      }
-    }
+    root.setAttribute('data-theme', theme);
+    document.body.classList.remove('prefers-dark');
   }
 }
 
 export async function refreshSwimlane(cookieStoreId: string): Promise<void> {
-  const [shortcutsMap, settings] = await Promise.all([
-    getShortcuts(),
-    getSettings(),
-  ]);
+  const [shortcutsMap, settings] = await Promise.all([getShortcuts(), getSettings()]);
   appSettings = settings;
 
   const container = discoveredContainers.find((c) => c.cookieStoreId === cookieStoreId);
@@ -96,7 +77,6 @@ export async function refreshSwimlane(cookieStoreId: string): Promise<void> {
   };
 
   const newEl = renderSwimlane(container, items, appSettings, callbacks);
-
   if (existingEl && existingEl.parentElement) {
     existingEl.parentElement.replaceChild(newEl, existingEl);
   }
@@ -170,9 +150,58 @@ async function handleReorderShortcuts(cookieStoreId: string, _reordered: Shortcu
   await refreshSwimlane(cookieStoreId);
 }
 
+async function handleReorderSwimlanes(reorderedVisibleIds: string[]): Promise<void> {
+  const fullCurrentOrder = orderContainers(discoveredContainers, appSettings.swimlaneOrder).map(
+    (c) => c.cookieStoreId
+  );
+  const visibleSet = new Set(reorderedVisibleIds);
+  let visibleIndex = 0;
+  const mergedOrder = fullCurrentOrder.map((id) => {
+    if (visibleSet.has(id)) {
+      const nextVisible = reorderedVisibleIds[visibleIndex];
+      visibleIndex++;
+      return nextVisible ?? id;
+    }
+    return id;
+  });
+
+  const mergedSet = new Set(mergedOrder);
+  reorderedVisibleIds.forEach((id) => {
+    if (!mergedSet.has(id)) {
+      mergedOrder.push(id);
+      mergedSet.add(id);
+    }
+  });
+
+  appSettings = await saveSettings({ swimlaneOrder: mergedOrder });
+}
+
+function orderContainers(containers: ContainerContext[], order: string[]): ContainerContext[] {
+  const containersById = new Map(containers.map((container) => [container.cookieStoreId, container]));
+  const ordered: ContainerContext[] = [];
+  const orderedIds = new Set<string>();
+  (order || []).forEach((cookieStoreId) => {
+    const container = containersById.get(cookieStoreId);
+    if (container && !orderedIds.has(cookieStoreId)) {
+      ordered.push(container);
+      orderedIds.add(cookieStoreId);
+    }
+  });
+
+  return [...ordered, ...containers.filter((container) => !orderedIds.has(container.cookieStoreId))];
+}
+
 function mountSwimlanes(shortcutsMap: Record<string, ShortcutItem[]>): void {
   const swimlanesContainer = document.getElementById('swimlanes-container');
   if (!swimlanesContainer) return;
+
+  lastMountedVisibility = JSON.stringify(appSettings.containerVisibility);
+
+  if (!swimlaneReorderingInitialized) {
+    setupSwimlaneReordering(swimlanesContainer, handleReorderSwimlanes);
+    swimlaneReorderingInitialized = true;
+  }
+
   const fragment = document.createDocumentFragment();
   const callbacks: SwimlaneCallbacks = {
     onAddShortcut: (cid) => handleOpenAddModal(cid),
@@ -181,16 +210,22 @@ function mountSwimlanes(shortcutsMap: Record<string, ShortcutItem[]>): void {
     onReorderShortcuts: (cid, reordered) => handleReorderShortcuts(cid, reordered),
   };
 
-  discoveredContainers.forEach((container) => {
+  orderContainers(discoveredContainers, appSettings.swimlaneOrder).forEach((container) => {
     if (!isContainerVisible(container, appSettings.containerVisibility)) return;
     const shortcuts = shortcutsMap[container.cookieStoreId] || [];
     fragment.appendChild(renderSwimlane(container, shortcuts, appSettings, callbacks));
   });
+
   swimlanesContainer.replaceChildren(fragment);
   searchController?.init();
 }
 
 export async function initializeApp(): Promise<void> {
+  const versionEl = document.getElementById('app-version');
+  if (versionEl && typeof browser !== 'undefined' && browser.runtime?.getManifest) {
+    versionEl.textContent = ` v${browser.runtime.getManifest().version}`;
+  }
+
   const startTime = performance.now();
   try {
     performance.mark('foxlaunch-mount-start');
@@ -208,6 +243,7 @@ export async function initializeApp(): Promise<void> {
 
   // Apply persistent theme and setup reactive prefers-color-scheme listener
   applyTheme(settings.theme);
+  document.documentElement.setAttribute('data-card-size', settings.cardSize);
 
   // Mount swimlanes
   mountSwimlanes(shortcutsMap);
@@ -224,12 +260,16 @@ export async function initializeApp(): Promise<void> {
         onSettingsChanged: async (updated) => {
           appSettings = updated;
           applyTheme(updated.theme);
-          const [refreshedContainers, refreshedShortcuts] = await Promise.all([
-            getContainers(),
-            getShortcuts(),
-          ]);
-          discoveredContainers = refreshedContainers;
-          mountSwimlanes(refreshedShortcuts);
+          document.documentElement.setAttribute('data-card-size', updated.cardSize);
+          const newVisibility = JSON.stringify(updated.containerVisibility);
+          if (newVisibility !== lastMountedVisibility) {
+            const [refreshedContainers, refreshedShortcuts] = await Promise.all([
+              getContainers(),
+              getShortcuts(),
+            ]);
+            discoveredContainers = refreshedContainers;
+            mountSwimlanes(refreshedShortcuts);
+          }
         },
         onResetDefaults: async () => {
           await renderApp();
@@ -253,12 +293,7 @@ export async function initializeApp(): Promise<void> {
     performance.measure('foxlaunch-mount', 'foxlaunch-mount-start', 'foxlaunch-mount-end');
   } catch {}
 
-  const measureEntries = performance.getEntriesByName('foxlaunch-mount');
-  const durationMs = measureEntries.length > 0
-    ? measureEntries[measureEntries.length - 1].duration
-    : performance.now() - startTime;
-
-  console.log(`[FoxLaunch] Mounted in ${durationMs.toFixed(2)}ms`);
+  const durationMs = performance.now() - startTime;
   (window as any).__FOXLAUNCH_MOUNT_DURATION__ = durationMs;
 }
 

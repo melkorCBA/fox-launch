@@ -42,6 +42,8 @@ export type TabBehavior = 'close' | 'keep';
  */
 export type ThemeMode = 'auto' | 'light' | 'dark';
 
+export type CardSize = 'small' | 'medium' | 'large';
+
 export interface ContainerVisibility {
   mode: 'all' | 'only' | 'hide';
   cookieStoreIds: string[];
@@ -58,10 +60,14 @@ export interface FoxLaunchSettings {
   tabBehavior: TabBehavior;
   /** Active UI color theme */
   theme: ThemeMode;
+  /** Shortcut card sizing across all swimlanes */
+  cardSize: CardSize;
   /** Whether the first-run onboarding walkthrough has been completed/dismissed */
   firstRunDismissed: boolean;
   /** Map of container cookieStoreId to collapse state (true = collapsed, false = expanded) */
   swimlaneCollapse: Record<string, boolean>;
+  /** Ordered container cookieStoreIds for swimlane display */
+  swimlaneOrder: string[];
   /** Local visibility filters for native container swimlanes */
   containerVisibility: ContainerVisibility;
 }

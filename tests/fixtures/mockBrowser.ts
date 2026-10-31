@@ -319,6 +319,9 @@ export function buildMockWebExtensionScript(options: MockHarnessInitOptions = {}
     },
 
     runtime: {
+      getManifest() {
+        return { manifest_version: 3, name: 'FoxLaunch', version: '9.8.7' };
+      },
       getURL(path) {
         if (!path) return '/';
         return path.startsWith('/') ? path : '/' + path;

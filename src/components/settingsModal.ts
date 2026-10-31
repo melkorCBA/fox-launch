@@ -5,7 +5,7 @@
  * reset-to-defaults with two-stage confirmation, and WCAG 2.1 AA focus management.
  */
 
-import type { ContainerContext, ContainerVisibility, FoxLaunchSettings, TabBehavior, ThemeMode } from '../types';
+import type { CardSize, ContainerContext, ContainerVisibility, FoxLaunchSettings, TabBehavior, ThemeMode } from '../types';
 import { getSettings, saveSettings, resetToDefaults } from '../services/storage';
 import { getContainers } from '../services/containers';
 
@@ -209,7 +209,52 @@ export function openSettingsModal(
     themeSection.appendChild(themeOptionsGroup);
     content.appendChild(themeSection);
 
-    // Section 3: Container Swimlane Visibility
+    // Section 3: Card Size
+    const cardSizeSection = document.createElement('div');
+    cardSizeSection.className = 'settings-section';
+    cardSizeSection.setAttribute('role', 'radiogroup');
+    cardSizeSection.setAttribute('aria-labelledby', 'card-size-title');
+
+    const cardSizeTitle = document.createElement('span');
+    cardSizeTitle.id = 'card-size-title';
+    cardSizeTitle.className = 'settings-section-title';
+    cardSizeTitle.textContent = 'Card Size';
+    cardSizeSection.appendChild(cardSizeTitle);
+
+    const cardSizeOptionsGroup = document.createElement('div');
+    cardSizeOptionsGroup.className = 'settings-options-group';
+
+    const createCardSizeOption = (cardSize: CardSize, label: string) => {
+      const labelEl = document.createElement('label');
+      labelEl.className = 'radio-option';
+
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'cardSize';
+      radio.value = cardSize;
+      radio.checked = activeSettings.cardSize === cardSize;
+
+      radio.addEventListener('change', async () => {
+        if (radio.checked) {
+          document.documentElement.setAttribute('data-card-size', cardSize);
+          const updated = await saveSettings({ cardSize });
+          activeSettings.cardSize = cardSize;
+          onSettingsChanged?.(updated);
+        }
+      });
+
+      labelEl.appendChild(radio);
+      labelEl.appendChild(document.createTextNode(label));
+      return labelEl;
+    };
+
+    cardSizeOptionsGroup.appendChild(createCardSizeOption('small', 'Small'));
+    cardSizeOptionsGroup.appendChild(createCardSizeOption('medium', 'Medium (default)'));
+    cardSizeOptionsGroup.appendChild(createCardSizeOption('large', 'Large'));
+    cardSizeSection.appendChild(cardSizeOptionsGroup);
+    content.appendChild(cardSizeSection);
+
+    // Section 4: Container Swimlane Visibility
     const visibilitySection = document.createElement('div');
     visibilitySection.className = 'settings-section';
     const visibilityTitle = document.createElement('span');
@@ -313,7 +358,7 @@ export function openSettingsModal(
     visibilitySection.appendChild(filterControls);
     content.appendChild(visibilitySection);
 
-    // Section 4: Reset to Defaults (Inline Two-Stage Confirmation)
+    // Section 5: Reset to Defaults (Inline Two-Stage Confirmation)
     const resetSection = document.createElement('div');
     resetSection.className = 'settings-section settings-reset-section';
 
@@ -378,6 +423,7 @@ export function openSettingsModal(
     confirmBtn.addEventListener('click', async () => {
       await resetToDefaults();
       document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-card-size', 'medium');
       if (onResetDefaults) {
         await onResetDefaults();
       }
