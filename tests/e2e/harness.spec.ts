@@ -63,6 +63,113 @@ test.describe('Mock WebExtension Test Harness Verification', () => {
     expect(reloadedStorage.foxlaunch_shortcuts['firefox-container-1'][1].title).toBe('GitHub');
   });
 
+  test('swimlane drag-and-drop order persists across page reload', async ({ openFoxLaunch, page, mockHarness }) => {
+    await openFoxLaunch({ containers: DEFAULT_MOCK_CONTAINERS });
+
+    await page
+      .locator('#swimlane-firefox-container-1 .swimlane-drag-handle')
+      .dragTo(page.locator('#swimlane-firefox-container-3 .swimlane-drag-handle'));
+
+    const reorderedIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(reorderedIds).toEqual([
+      'firefox-container-2',
+      'firefox-container-1',
+      'firefox-container-3',
+      'firefox-container-4',
+      'firefox-default',
+    ]);
+
+    const settings = await page.evaluate(async () => {
+      const { foxlaunch_settings } = await window.browser.storage.local.get('foxlaunch_settings');
+      return foxlaunch_settings;
+    });
+    expect(settings.swimlaneOrder).toEqual(reorderedIds);
+
+    await mockHarness.reloadPage();
+    const reloadedIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(reloadedIds).toEqual(reorderedIds);
+  });
+
+  test('swimlane keyboard reordering persists across page reload and retains focus', async ({ openFoxLaunch, page, mockHarness }) => {
+    await openFoxLaunch({ containers: DEFAULT_MOCK_CONTAINERS });
+
+    const handle2 = page.locator('#swimlane-firefox-container-2 .swimlane-drag-handle');
+    await handle2.focus();
+    await expect(handle2).toBeFocused();
+
+    // Reorder using ArrowUp directly
+    await page.keyboard.press('ArrowUp');
+
+    let reorderedIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(reorderedIds[0]).toBe('firefox-container-2');
+    expect(reorderedIds[1]).toBe('firefox-container-1');
+    await expect(handle2).toBeFocused();
+
+    // Reorder using Enter grab mode and ArrowDown
+    await page.keyboard.press('Enter');
+    await expect(handle2).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(handle2).toHaveAttribute('aria-pressed', 'false');
+    await expect(handle2).toBeFocused();
+
+    reorderedIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(reorderedIds[0]).toBe('firefox-container-1');
+    expect(reorderedIds[1]).toBe('firefox-container-2');
+
+    const settings = await page.evaluate(async () => {
+      const { foxlaunch_settings } = await window.browser.storage.local.get('foxlaunch_settings');
+      return foxlaunch_settings;
+    });
+    expect(settings.swimlaneOrder).toEqual(reorderedIds);
+
+    await mockHarness.reloadPage();
+    await expect(page.locator('#swimlanes-container > .swimlane')).toHaveCount(5);
+    const reloadedIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(reloadedIds).toEqual(reorderedIds);
+  });
+
+  test('keyboard reordering skips search-hidden swimlanes and Escape cancels reordering cleanly', async ({ openFoxLaunch, page, mockHarness }) => {
+    await openFoxLaunch({ containers: DEFAULT_MOCK_CONTAINERS });
+
+    // Manually hide container 2 with style.display = 'none' to simulate search filtering
+    await page.evaluate(() => {
+      const lane2 = document.getElementById('swimlane-firefox-container-2');
+      if (lane2) lane2.style.display = 'none';
+    });
+
+    const handle1 = page.locator('#swimlane-firefox-container-1 .swimlane-drag-handle');
+    await handle1.focus();
+    await page.keyboard.press('ArrowDown');
+
+    // Container 1 moved down past hidden container 2 to after container 3
+    let visibleOrder = await page.locator('#swimlanes-container > .swimlane:visible').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(visibleOrder[0]).toBe('firefox-container-3');
+    expect(visibleOrder[1]).toBe('firefox-container-1');
+
+    // Now test Escape cancellation
+    await handle1.focus();
+    await page.keyboard.press('Enter');
+    await expect(handle1).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('ArrowDown');
+
+    await page.keyboard.press('Escape');
+    await expect(handle1).toHaveAttribute('aria-pressed', 'false');
+    await expect(handle1).toBeFocused();
+  });
+
   test('browser.tabs.create records dispatched tabs accurately', async ({ openFoxLaunch, page, mockHarness }) => {
     await openFoxLaunch();
 

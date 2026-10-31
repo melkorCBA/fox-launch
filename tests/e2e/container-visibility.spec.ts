@@ -121,4 +121,66 @@ test.describe('Container visibility settings', () => {
     await page.getByRole('button', { name: 'Yes, Reset Everything' }).click();
     await expect(page.locator('.swimlane')).toHaveCount(5);
   });
+
+  test('reordering swimlanes while filter is active preserves hidden container positions upon reset', async ({ openFoxLaunch, page, mockHarness }) => {
+    await openFoxLaunch({
+      containers: DEFAULT_MOCK_CONTAINERS,
+      settings: {
+        ...DEFAULT_SETTINGS,
+        swimlaneOrder: [
+          'firefox-container-1',
+          'firefox-container-2',
+          'firefox-container-3',
+          'firefox-container-4',
+          'firefox-default',
+        ],
+        containerVisibility: {
+          mode: 'hide',
+          cookieStoreIds: ['firefox-container-2'],
+          namePatterns: [],
+        },
+      },
+    });
+
+    await expect(page.locator('.swimlane')).toHaveCount(4);
+
+    const handle3 = page.locator('#swimlane-firefox-container-3 .swimlane-drag-handle');
+    await handle3.focus();
+    await page.keyboard.press('ArrowUp');
+
+    const visibleIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(visibleIds).toEqual([
+      'firefox-container-3',
+      'firefox-container-1',
+      'firefox-container-4',
+      'firefox-default',
+    ]);
+
+    const storage = await mockHarness.getStorage();
+    expect(storage.foxlaunch_settings.swimlaneOrder).toEqual([
+      'firefox-container-3',
+      'firefox-container-2',
+      'firefox-container-1',
+      'firefox-container-4',
+      'firefox-default',
+    ]);
+
+    await page.locator('#settings-btn').click();
+    await page.getByRole('radio', { name: 'Show all', exact: true }).check();
+    await page.getByRole('button', { name: 'Done', exact: true }).click();
+
+    await expect(page.locator('.swimlane')).toHaveCount(5);
+    const allIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(allIds).toEqual([
+      'firefox-container-3',
+      'firefox-container-2',
+      'firefox-container-1',
+      'firefox-container-4',
+      'firefox-default',
+    ]);
+  });
 });

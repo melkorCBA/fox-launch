@@ -16,6 +16,7 @@ export const DEFAULT_SETTINGS: FoxLaunchSettings = {
   version: 1,
   tabBehavior: 'keep',
   theme: 'auto',
+  cardSize: 'medium',
   firstRunDismissed: false,
   containerVisibility: {
     mode: 'all',
@@ -25,6 +26,7 @@ export const DEFAULT_SETTINGS: FoxLaunchSettings = {
   swimlaneCollapse: {
     'firefox-default': true, // Collapsed by default per R1 & Pilot Plan §D6
   },
+  swimlaneOrder: [],
 };
 
 /**
@@ -219,6 +221,9 @@ export async function getSettings(): Promise<FoxLaunchSettings> {
       version: raw.version ?? DEFAULT_SETTINGS.version,
       tabBehavior: raw.tabBehavior ?? DEFAULT_SETTINGS.tabBehavior,
       theme: raw.theme ?? DEFAULT_SETTINGS.theme,
+      cardSize: raw.cardSize === 'small' || raw.cardSize === 'medium' || raw.cardSize === 'large'
+        ? raw.cardSize
+        : DEFAULT_SETTINGS.cardSize,
       firstRunDismissed: raw.firstRunDismissed ?? DEFAULT_SETTINGS.firstRunDismissed,
       containerVisibility: {
         mode: raw.containerVisibility?.mode === 'only' || raw.containerVisibility?.mode === 'hide'
@@ -232,6 +237,9 @@ export async function getSettings(): Promise<FoxLaunchSettings> {
         ...DEFAULT_SETTINGS.swimlaneCollapse,
         ...(raw.swimlaneCollapse || {}),
       },
+      swimlaneOrder: Array.isArray(raw.swimlaneOrder)
+        ? raw.swimlaneOrder.filter((id) => typeof id === 'string')
+        : [],
     };
   } catch (error) {
     console.error('[FoxLaunch] Error reading settings:', error);
