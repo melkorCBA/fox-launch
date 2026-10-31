@@ -21,6 +21,7 @@ FoxLaunch organizes your shortcuts into dedicated **Firefox Multi-Account Contai
 - ⚙️ **Customizable Settings**:
   - Launcher tab behavior: `Keep launcher tab open` or `Close launcher tab on launch`.
   - Theme mode: `System Default`, `Dark`, or `Light`.
+  - Card size: `Small`, `Medium` (default), or `Large`, applied instantly across all swimlanes and saved locally.
   - Container swimlane visibility: **Show all** (default), **Only show these**, or **Hide these**. Select containers and/or enter name patterns, one per line (e.g. `Work*`, `Dev-*`). Patterns match whole names case-insensitively; `*` matches any text and other characters are literal. Empty filters show no containers in “Only show these” and hide none in “Hide these”. The default context always remains visible. Filters save locally, apply to newly discovered containers, and never delete hidden shortcuts.
   - Factory reset with two-stage confirmation.
 - 🚶 **First-Run Onboarding**: Guided 4-step walkthrough overlay for new users with keyboard navigation and step indicators.
