@@ -8,19 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-01
+
 ### Added
-- Official Mozilla Add-ons (AMO) visual listing assets: 128x128 scalable master icon (`metadata/amo/assets/foxlaunch-icon-128.png`) and 2400x1800 (4:3) promotional screenshots (`metadata/amo/screenshots/`).
-- Automated Playwright screenshot pipeline script (`scripts/capture-amo-screenshots.mjs`) supporting parameterized scene captures, icon downscale verification, and asset pruning.
-- Dedicated agent skill `/manage-amo-screenshots` to evaluate feature commit sets for visual impact and maintain the AMO 5-screenshot limit.
-- Integration of background screenshot manager agent into `/create-release` workflow.
-- AMO visual asset constraints documented in `.agents/rules/amo-listing.md`.
-- Automatic site favicon capture on shortcut dispatch and open-tab pre-population with graceful procedural avatar fallback (#15).
-- Conventional Commits v1.0.0 specification enforcement across agentic and collaborative workflows.
-- Automated PR title validation workflow (`.github/workflows/semantic-pr.yml`) using `action-semantic-pull-request`.
-- Project agent rule for Conventional Commits (`.agents/rules/conventional-commits.md`).
-- GitHub Copilot guidelines (`.github/copilot-instructions.md`) for Conventional Commits format.
-- Conventional Commits checklist and format specifications in `.github/pull_request_template.md`.
-- Conventional Commits guidance in `/create-pr` and `/create-release` agent skills.
+- Automatic site favicon capture on shortcut dispatch and open-tab pre-population with graceful procedural avatar fallback (#15, #27).
+- Container swimlane drag-and-drop reordering with keyboard controls and accessible reorder actions (#21).
+- Small, medium, and large shortcut card size options in settings (#22).
+- Container swimlane visibility toggles in settings to show or hide individual container lanes (#20).
+- App version and copyright display in new tab footer (#19).
+- Official Mozilla Add-ons (AMO) visual listing assets: 128x128 scalable master icon (`metadata/amo/assets/foxlaunch-icon-128.png`) and 2400x1800 (4:3) promotional screenshots (`metadata/amo/screenshots/`) (#29).
+- Automated Playwright screenshot pipeline script (`scripts/capture-amo-screenshots.mjs`) supporting parameterized scene captures, icon downscale verification, and asset pruning (#29).
+- Automated screenshot refresh during AMO listing sync (#31).
+- Dedicated agent skill `/manage-amo-screenshots` to evaluate feature commit sets for visual impact and maintain the AMO 5-screenshot limit (#29).
+- Integration of background screenshot manager agent into `/create-release` workflow (#29).
+- Contributor onboarding guide in `CONTRIBUTING.md` (#28).
+- Conventional Commits v1.0.0 specification enforcement across agentic and collaborative workflows with automated PR validation (`.github/workflows/semantic-pr.yml`).
+
+### Changed
+- Post-release automated merge-back of published releases into main (`.agents/skills/create-release/SKILL.md`) (#25).
+- Refreshed store listing description to highlight local favicon caching and avatar fallback (`metadata/amo/description.md`).
+
+### Fixed
+- Reconciled merged features across settings, swimlanes, and storage serialization queues (#26).
 
 ## [1.1.0] - 2026-10-31
 
