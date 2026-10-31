@@ -161,7 +161,10 @@ export function renderSwimlane(
   dragHandle.className = 'btn-icon swimlane-drag-handle';
   dragHandle.draggable = true;
   dragHandle.setAttribute('aria-label', `Reorder ${container.name} swimlane`);
-  dragHandle.title = 'Drag to reorder';
+  dragHandle.title = 'Drag or press Enter/Space then Arrow keys to reorder';
+  dragHandle.setAttribute('aria-roledescription', 'sortable');
+  dragHandle.setAttribute('aria-keyshortcuts', 'ArrowUp ArrowDown');
+  dragHandle.setAttribute('aria-pressed', 'false');
   const gripSvg = createSvg({ width: '16', height: '16', viewBox: '0 0 16 16', fill: 'currentColor', 'aria-hidden': 'true' }, [
     createSvgElement('circle', { cx: '5', cy: '3', r: '1' }),
     createSvgElement('circle', { cx: '11', cy: '3', r: '1' }),

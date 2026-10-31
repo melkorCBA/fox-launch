@@ -93,6 +93,67 @@ export function setupSwimlaneReordering(
   onReordered: (cookieStoreIds: string[]) => Promise<void> | void
 ): void {
   let draggedSwimlane: HTMLElement | null = null;
+  let grabbedSwimlane: HTMLElement | null = null;
+  let originalIndex = -1;
+
+
+
+  const getOrderedSwimlaneIds = (): string[] => {
+    return Array.from(container.children)
+      .filter((child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane'))
+      .map((lane) => lane.dataset.cookieStoreId)
+      .filter((id): id is string => Boolean(id));
+  };
+
+  const announceStatus = (message: string) => {
+    let liveRegion = document.getElementById('a11y-status');
+    if (!liveRegion) {
+      liveRegion = document.createElement('div');
+      liveRegion.id = 'a11y-status';
+      liveRegion.setAttribute('role', 'status');
+      liveRegion.setAttribute('aria-live', 'polite');
+      liveRegion.setAttribute('aria-atomic', 'true');
+      liveRegion.style.cssText =
+        'position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;';
+      document.body.appendChild(liveRegion);
+    }
+    liveRegion.textContent = '';
+    requestAnimationFrame(() => {
+      if (liveRegion) liveRegion.textContent = message;
+    });
+  };
+
+  const moveSwimlane = async (swimlane: HTMLElement, handle: HTMLElement, direction: 'up' | 'down') => {
+    const allSwimlanes = Array.from(container.children).filter(
+      (child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane')
+    );
+    const currentIndex = allSwimlanes.indexOf(swimlane);
+    const title = swimlane.querySelector('.swimlane-title')?.textContent || 'Swimlane';
+
+    if (direction === 'up' && currentIndex > 0) {
+      const targetSwimlane = allSwimlanes[currentIndex - 1];
+      container.insertBefore(swimlane, targetSwimlane);
+      handle.focus();
+      const cookieStoreIds = getOrderedSwimlaneIds();
+      try {
+        await onReordered(cookieStoreIds);
+      } catch (err) {
+        console.error('[FoxLaunch] Failed to persist swimlane reorder:', err);
+      }
+      announceStatus(`${title} moved up to position ${currentIndex} of ${allSwimlanes.length}.`);
+    } else if (direction === 'down' && currentIndex < allSwimlanes.length - 1) {
+      const targetSwimlane = allSwimlanes[currentIndex + 1];
+      targetSwimlane.after(swimlane);
+      handle.focus();
+      const cookieStoreIds = getOrderedSwimlaneIds();
+      try {
+        await onReordered(cookieStoreIds);
+      } catch (err) {
+        console.error('[FoxLaunch] Failed to persist swimlane reorder:', err);
+      }
+      announceStatus(`${title} moved down to position ${currentIndex + 2} of ${allSwimlanes.length}.`);
+    }
+  };
 
   const clearDragState = () => {
     draggedSwimlane?.classList.remove('is-dragging');
@@ -155,4 +216,120 @@ export function setupSwimlaneReordering(
   });
 
   container.addEventListener('dragend', clearDragState);
+
+  container.addEventListener('keydown', async (event: KeyboardEvent) => {
+    const target = event.target as HTMLElement | null;
+    const handle = target?.closest<HTMLElement>('.swimlane-drag-handle');
+    if (!handle) return;
+
+    const swimlane = handle.closest<HTMLElement>('.swimlane');
+    if (!swimlane || swimlane.parentElement !== container) return;
+
+    const title = swimlane.querySelector('.swimlane-title')?.textContent || 'Swimlane';
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      await moveSwimlane(swimlane, handle, 'up');
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      await moveSwimlane(swimlane, handle, 'down');
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      const isGrabbed = handle.getAttribute('aria-pressed') === 'true';
+      if (!isGrabbed) {
+        if (grabbedSwimlane && grabbedSwimlane !== swimlane) {
+          const prevHandle = grabbedSwimlane.querySelector<HTMLElement>('.swimlane-drag-handle');
+          prevHandle?.setAttribute('aria-pressed', 'false');
+          prevHandle?.classList.remove('is-grabbed');
+          grabbedSwimlane.classList.remove('keyboard-reordering');
+        }
+
+        grabbedSwimlane = swimlane;
+        const allSwimlanes = Array.from(container.children).filter(
+          (child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane')
+        );
+        originalIndex = allSwimlanes.indexOf(swimlane);
+        handle.setAttribute('aria-pressed', 'true');
+        handle.classList.add('is-grabbed');
+        swimlane.classList.add('keyboard-reordering');
+        announceStatus(
+          `Reorder mode active for ${title}. Press Arrow Up to move up, Arrow Down to move down, Enter or Space to finish, Escape to cancel.`
+        );
+      } else {
+        handle.setAttribute('aria-pressed', 'false');
+        handle.classList.remove('is-grabbed');
+        swimlane.classList.remove('keyboard-reordering');
+        grabbedSwimlane = null;
+        const allSwimlanes = Array.from(container.children).filter(
+          (child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane')
+        );
+        const newIndex = allSwimlanes.indexOf(swimlane);
+        announceStatus(`${title} placed at position ${newIndex + 1} of ${allSwimlanes.length}.`);
+        handle.focus();
+      }
+    } else if (event.key === 'Escape' && grabbedSwimlane) {
+      event.preventDefault();
+      handle.setAttribute('aria-pressed', 'false');
+      handle.classList.remove('is-grabbed');
+      grabbedSwimlane.classList.remove('keyboard-reordering');
+      const allSwimlanes = Array.from(container.children).filter(
+        (child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane')
+      );
+      const currentIndex = allSwimlanes.indexOf(grabbedSwimlane);
+      if (originalIndex !== -1 && currentIndex !== originalIndex) {
+        if (originalIndex >= allSwimlanes.length - 1) {
+          container.appendChild(grabbedSwimlane);
+        } else {
+          const ref = allSwimlanes[originalIndex > currentIndex ? originalIndex + 1 : originalIndex];
+          container.insertBefore(grabbedSwimlane, ref);
+        }
+        await onReordered(getOrderedSwimlaneIds());
+      }
+      announceStatus(`Reorder cancelled for ${title}.`);
+      grabbedSwimlane = null;
+      handle.focus();
+    }
+  });
+
+  container.addEventListener('click', async (event: MouseEvent) => {
+    const target = event.target as HTMLElement | null;
+    const handle = target?.closest<HTMLElement>('.swimlane-drag-handle');
+    if (!handle) return;
+    const swimlane = handle.closest<HTMLElement>('.swimlane');
+    if (!swimlane || swimlane.parentElement !== container) return;
+
+    const title = swimlane.querySelector('.swimlane-title')?.textContent || 'Swimlane';
+    const isGrabbed = handle.getAttribute('aria-pressed') === 'true';
+    if (!isGrabbed) {
+      if (grabbedSwimlane && grabbedSwimlane !== swimlane) {
+        const prevHandle = grabbedSwimlane.querySelector<HTMLElement>('.swimlane-drag-handle');
+        prevHandle?.setAttribute('aria-pressed', 'false');
+        prevHandle?.classList.remove('is-grabbed');
+        grabbedSwimlane.classList.remove('keyboard-reordering');
+      }
+
+      grabbedSwimlane = swimlane;
+      const allSwimlanes = Array.from(container.children).filter(
+        (child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane')
+      );
+      originalIndex = allSwimlanes.indexOf(swimlane);
+      handle.setAttribute('aria-pressed', 'true');
+      handle.classList.add('is-grabbed');
+      swimlane.classList.add('keyboard-reordering');
+      announceStatus(
+        `Reorder mode active for ${title}. Press Arrow Up to move up, Arrow Down to move down, Enter or Space to finish, Escape to cancel.`
+      );
+    } else {
+      handle.setAttribute('aria-pressed', 'false');
+      handle.classList.remove('is-grabbed');
+      swimlane.classList.remove('keyboard-reordering');
+      grabbedSwimlane = null;
+      const allSwimlanes = Array.from(container.children).filter(
+        (child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane')
+      );
+      const newIndex = allSwimlanes.indexOf(swimlane);
+      announceStatus(`${title} placed at position ${newIndex + 1} of ${allSwimlanes.length}.`);
+      handle.focus();
+    }
+  });
 }

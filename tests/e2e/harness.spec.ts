@@ -94,6 +94,51 @@ test.describe('Mock WebExtension Test Harness Verification', () => {
     expect(reloadedIds).toEqual(reorderedIds);
   });
 
+  test('swimlane keyboard reordering persists across page reload and retains focus', async ({ openFoxLaunch, page, mockHarness }) => {
+    await openFoxLaunch({ containers: DEFAULT_MOCK_CONTAINERS });
+
+    const handle2 = page.locator('#swimlane-firefox-container-2 .swimlane-drag-handle');
+    await handle2.focus();
+    await expect(handle2).toBeFocused();
+
+    // Reorder using ArrowUp directly
+    await page.keyboard.press('ArrowUp');
+
+    let reorderedIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(reorderedIds[0]).toBe('firefox-container-2');
+    expect(reorderedIds[1]).toBe('firefox-container-1');
+    await expect(handle2).toBeFocused();
+
+    // Reorder using Enter grab mode and ArrowDown
+    await page.keyboard.press('Enter');
+    await expect(handle2).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(handle2).toHaveAttribute('aria-pressed', 'false');
+    await expect(handle2).toBeFocused();
+
+    reorderedIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(reorderedIds[0]).toBe('firefox-container-1');
+    expect(reorderedIds[1]).toBe('firefox-container-2');
+
+    const settings = await page.evaluate(async () => {
+      const { foxlaunch_settings } = await window.browser.storage.local.get('foxlaunch_settings');
+      return foxlaunch_settings;
+    });
+    expect(settings.swimlaneOrder).toEqual(reorderedIds);
+
+    await mockHarness.reloadPage();
+    await expect(page.locator('#swimlanes-container > .swimlane')).toHaveCount(5);
+    const reloadedIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(reloadedIds).toEqual(reorderedIds);
+  });
+
   test('browser.tabs.create records dispatched tabs accurately', async ({ openFoxLaunch, page, mockHarness }) => {
     await openFoxLaunch();
 

@@ -93,6 +93,17 @@
   cursor: grabbing;
 }
 
+.swimlane-drag-handle.is-grabbed {
+  outline: 2px solid var(--focus-ring-active);
+  outline-offset: 2px;
+  background-color: var(--bg-hover);
+}
+
+.swimlane.keyboard-reordering {
+  border-color: var(--focus-ring-active);
+  box-shadow: 0 0 0 2px var(--focus-ring-active);
+}
+
 .swimlane-toggle svg {
   transition: transform var(--transition-fast);
 }
