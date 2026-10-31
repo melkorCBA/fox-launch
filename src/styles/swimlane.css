@@ -2,6 +2,39 @@
  * FoxLaunch — Swimlane & Shortcut Card Styling
  */
 
+:root {
+  --card-min-width: 190px;
+  --card-padding: var(--space-3);
+  --card-gap: var(--space-3);
+  --card-avatar-size: 32px;
+  --card-title-size: var(--text-sm);
+  --card-domain-size: var(--text-xs);
+  --card-menu-size: 36px;
+  --card-menu-icon-size: 16px;
+}
+
+[data-card-size="small"] {
+  --card-min-width: 150px;
+  --card-padding: var(--space-2);
+  --card-gap: var(--space-2);
+  --card-avatar-size: 24px;
+  --card-title-size: 0.75rem;
+  --card-domain-size: 0.625rem;
+  --card-menu-size: 28px;
+  --card-menu-icon-size: 14px;
+}
+
+[data-card-size="large"] {
+  --card-min-width: 230px;
+  --card-padding: var(--space-4);
+  --card-gap: var(--space-4);
+  --card-avatar-size: 40px;
+  --card-title-size: var(--text-base);
+  --card-domain-size: var(--text-sm);
+  --card-menu-size: 44px;
+  --card-menu-icon-size: 20px;
+}
+
 /* Swimlane Section */
 .swimlane {
   display: flex;
@@ -17,6 +50,15 @@
 
 .swimlane:hover {
   border-color: var(--border-strong);
+}
+
+.swimlane.is-dragging {
+  opacity: 0.5;
+}
+
+.swimlane.drag-over {
+  border-color: var(--focus-ring-active);
+  box-shadow: 0 0 0 2px var(--focus-ring-active);
 }
 
 /* Swimlane Header */
@@ -76,6 +118,25 @@
   gap: var(--space-2);
 }
 
+.swimlane-drag-handle {
+  cursor: grab;
+}
+
+.swimlane-drag-handle:active {
+  cursor: grabbing;
+}
+
+.swimlane-drag-handle.is-grabbed {
+  outline: 2px solid var(--focus-ring-active);
+  outline-offset: 2px;
+  background-color: var(--bg-hover);
+}
+
+.swimlane.keyboard-reordering {
+  border-color: var(--focus-ring-active);
+  box-shadow: 0 0 0 2px var(--focus-ring-active);
+}
+
 .swimlane-toggle svg {
   transition: transform var(--transition-fast);
 }
@@ -87,7 +148,7 @@
 /* Swimlane Card Grid */
 .swimlane-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
   gap: var(--space-3);
   padding-top: var(--space-2);
 }
@@ -110,8 +171,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-3);
+  gap: var(--card-gap);
+  padding: var(--card-padding);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -156,6 +217,8 @@
 }
 
 .shortcut-avatar {
+  width: var(--card-avatar-size);
+  height: var(--card-avatar-size);
   border-radius: var(--radius-sm);
   object-fit: cover;
 }
@@ -169,7 +232,7 @@
 }
 
 .shortcut-title {
-  font-size: var(--text-sm);
+  font-size: var(--card-title-size);
   font-weight: 500;
   color: var(--text-primary);
   overflow: hidden;
@@ -178,7 +241,7 @@
 }
 
 .shortcut-domain {
-  font-size: var(--text-xs);
+  font-size: var(--card-domain-size);
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -191,8 +254,15 @@
 }
 
 .shortcut-menu-btn {
+  width: var(--card-menu-size);
+  height: var(--card-menu-size);
   opacity: 0;
   transition: opacity var(--transition-fast);
+}
+
+.shortcut-menu-btn svg {
+  width: var(--card-menu-icon-size);
+  height: var(--card-menu-icon-size);
 }
 
 .shortcut-card:hover .shortcut-menu-btn,
