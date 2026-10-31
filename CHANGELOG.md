@@ -3,9 +3,18 @@
 All notable changes to FoxLaunch will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+commit messages adhere to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+- Conventional Commits v1.0.0 specification enforcement across agentic and collaborative workflows.
+- Automated PR title validation workflow (`.github/workflows/semantic-pr.yml`) using `action-semantic-pull-request`.
+- Project agent rule for Conventional Commits (`.agents/rules/conventional-commits.md`).
+- GitHub Copilot guidelines (`.github/copilot-instructions.md`) for Conventional Commits format.
+- Conventional Commits checklist and format specifications in `.github/pull_request_template.md`.
+- Conventional Commits guidance in `/create-pr` and `/create-release` agent skills.
 
 ## [1.0.1] - 2026-10-30
 
