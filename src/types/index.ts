@@ -56,6 +56,8 @@ export interface FoxLaunchSettings {
   firstRunDismissed: boolean;
   /** Map of container cookieStoreId to collapse state (true = collapsed, false = expanded) */
   swimlaneCollapse: Record<string, boolean>;
+  /** Ordered container cookieStoreIds for swimlane display */
+  swimlaneOrder: string[];
 }
 
 /**

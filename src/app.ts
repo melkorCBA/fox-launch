@@ -13,8 +13,9 @@ import './styles/onboarding.css';
 
 import type { ContainerContext, ShortcutItem, FoxLaunchSettings, ThemeMode } from './types';
 import { getContainers } from './services/containers';
-import { getShortcuts, getSettings, addShortcut, updateShortcut, deleteShortcut, saveShortcuts } from './services/storage';
+import { getShortcuts, getSettings, addShortcut, updateShortcut, deleteShortcut, saveShortcuts, saveSettings } from './services/storage';
 import { renderSwimlane, type SwimlaneCallbacks } from './components/swimlane';
+import { setupSwimlaneReordering } from './components/dragDrop';
 import { initSearch, type SearchController } from './components/search';
 import { openShortcutModal } from './components/modal';
 import { openSettingsModal } from './components/settingsModal';
@@ -24,6 +25,7 @@ import { showUndoToast } from './components/toast';
 let searchController: SearchController | null = null;
 let appSettings: FoxLaunchSettings;
 let discoveredContainers: ContainerContext[] = [];
+let swimlaneReorderingInitialized = false;
 
 let themeMediaQueryList: MediaQueryList | null = null;
 let themeChangeHandler: ((e: MediaQueryListEvent) => void) | null = null;
@@ -165,6 +167,25 @@ async function handleReorderShortcuts(cookieStoreId: string, _reordered: Shortcu
   await refreshSwimlane(cookieStoreId);
 }
 
+async function handleReorderSwimlanes(cookieStoreIds: string[]): Promise<void> {
+  appSettings = await saveSettings({ swimlaneOrder: cookieStoreIds });
+}
+
+function orderContainers(containers: ContainerContext[], order: string[]): ContainerContext[] {
+  const containersById = new Map(containers.map((container) => [container.cookieStoreId, container]));
+  const ordered: ContainerContext[] = [];
+  const orderedIds = new Set<string>();
+  order.forEach((cookieStoreId) => {
+    const container = containersById.get(cookieStoreId);
+    if (container && !orderedIds.has(cookieStoreId)) {
+      ordered.push(container);
+      orderedIds.add(cookieStoreId);
+    }
+  });
+
+  return [...ordered, ...containers.filter((container) => !orderedIds.has(container.cookieStoreId))];
+}
+
 export async function initializeApp(): Promise<void> {
   const startTime = performance.now();
   try {
@@ -187,6 +208,11 @@ export async function initializeApp(): Promise<void> {
   // Mount swimlanes
   const swimlanesContainer = document.getElementById('swimlanes-container');
   if (swimlanesContainer) {
+    if (!swimlaneReorderingInitialized) {
+      setupSwimlaneReordering(swimlanesContainer, handleReorderSwimlanes);
+      swimlaneReorderingInitialized = true;
+    }
+
     swimlanesContainer.replaceChildren();
     const fragment = document.createDocumentFragment();
 
@@ -197,7 +223,7 @@ export async function initializeApp(): Promise<void> {
       onReorderShortcuts: (cid, reordered) => handleReorderShortcuts(cid, reordered),
     };
 
-    containers.forEach((container) => {
+    orderContainers(containers, settings.swimlaneOrder).forEach((container) => {
       const shortcuts = shortcutsMap[container.cookieStoreId] || [];
       const swimlaneEl = renderSwimlane(container, shortcuts, appSettings, callbacks);
       fragment.appendChild(swimlaneEl);

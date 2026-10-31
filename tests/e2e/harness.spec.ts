@@ -63,6 +63,37 @@ test.describe('Mock WebExtension Test Harness Verification', () => {
     expect(reloadedStorage.foxlaunch_shortcuts['firefox-container-1'][1].title).toBe('GitHub');
   });
 
+  test('swimlane drag-and-drop order persists across page reload', async ({ openFoxLaunch, page, mockHarness }) => {
+    await openFoxLaunch({ containers: DEFAULT_MOCK_CONTAINERS });
+
+    await page
+      .locator('#swimlane-firefox-container-1 .swimlane-drag-handle')
+      .dragTo(page.locator('#swimlane-firefox-container-3 .swimlane-drag-handle'));
+
+    const reorderedIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(reorderedIds).toEqual([
+      'firefox-container-2',
+      'firefox-container-1',
+      'firefox-container-3',
+      'firefox-container-4',
+      'firefox-default',
+    ]);
+
+    const settings = await page.evaluate(async () => {
+      const { foxlaunch_settings } = await window.browser.storage.local.get('foxlaunch_settings');
+      return foxlaunch_settings;
+    });
+    expect(settings.swimlaneOrder).toEqual(reorderedIds);
+
+    await mockHarness.reloadPage();
+    const reloadedIds = await page.locator('#swimlanes-container > .swimlane').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(reloadedIds).toEqual(reorderedIds);
+  });
+
   test('browser.tabs.create records dispatched tabs accurately', async ({ openFoxLaunch, page, mockHarness }) => {
     await openFoxLaunch();
 
