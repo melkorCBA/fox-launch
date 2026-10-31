@@ -147,31 +147,74 @@ test.describe('Brand Guide Compliance & Design System', () => {
       settings: { ...DEFAULT_SETTINGS, theme: 'dark' },
     });
 
-    // Dark Mode Contrast
-    const darkContrast = await page.evaluate(() => {
-      const style = window.getComputedStyle(document.documentElement);
+    // 1. Measure Dark Mode rendered colors from actual DOM elements
+    const darkMeasurements = await page.evaluate(() => {
+      const brandTitle = document.querySelector('.brand-title') as HTMLElement;
+      const card = document.querySelector('.shortcut-card') as HTMLElement;
+      const mutedCount = document.querySelector('.swimlane-count') as HTMLElement;
+
+      const btnPrimary = document.createElement('button');
+      btnPrimary.className = 'btn-primary';
+      btnPrimary.textContent = 'Save';
+      document.body.appendChild(btnPrimary);
+      const btnStyle = window.getComputedStyle(btnPrimary);
+      const btnBg = btnStyle.backgroundColor;
+      const btnColor = btnStyle.color;
+      btnPrimary.remove();
+
       return {
-        bg: style.getPropertyValue('--bg-primary').trim(),
-        surface: style.getPropertyValue('--bg-surface').trim(),
-        textPrimary: style.getPropertyValue('--text-primary').trim(),
-        textMuted: style.getPropertyValue('--text-muted').trim(),
+        bodyBg: window.getComputedStyle(document.documentElement).backgroundColor,
+        titleColor: window.getComputedStyle(brandTitle).color,
+        cardBg: window.getComputedStyle(card).backgroundColor,
+        mutedColor: window.getComputedStyle(mutedCount).color,
+        btnBg,
+        btnColor,
       };
     });
 
-    const darkPrimaryRatio = getContrastRatio(parseRgb('rgb(28, 27, 34)'), parseRgb('rgb(251, 251, 254)'));
-    const darkMutedRatio = getContrastRatio(parseRgb('rgb(43, 42, 51)'), parseRgb('rgb(166, 164, 182)'));
+    const darkTitleRatio = getContrastRatio(parseRgb(darkMeasurements.bodyBg), parseRgb(darkMeasurements.titleColor));
+    const darkMutedRatio = getContrastRatio(parseRgb(darkMeasurements.cardBg), parseRgb(darkMeasurements.mutedColor));
+    const darkBtnRatio = getContrastRatio(parseRgb(darkMeasurements.btnBg), parseRgb(darkMeasurements.btnColor));
 
-    expect(darkPrimaryRatio).toBeGreaterThanOrEqual(14.0); // 14.8:1
-    expect(darkMutedRatio).toBeGreaterThanOrEqual(4.5); // 5.6:1 (Passes AA)
+    expect(darkTitleRatio).toBeGreaterThanOrEqual(4.5);
+    expect(darkMutedRatio).toBeGreaterThanOrEqual(4.5);
+    expect(darkBtnRatio).toBeGreaterThanOrEqual(4.5);
 
-    // Switch to Light Mode
+    // 2. Switch to Light Mode and measure rendered colors from actual DOM elements
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
+    await page.waitForTimeout(200);
 
-    const lightPrimaryRatio = getContrastRatio(parseRgb('rgb(249, 249, 251)'), parseRgb('rgb(21, 20, 26)'));
-    const lightMutedRatio = getContrastRatio(parseRgb('rgb(240, 240, 244)'), parseRgb('rgb(91, 91, 102)'));
+    const lightMeasurements = await page.evaluate(() => {
+      const brandTitle = document.querySelector('.brand-title') as HTMLElement;
+      const card = document.querySelector('.shortcut-card') as HTMLElement;
+      const mutedCount = document.querySelector('.swimlane-count') as HTMLElement;
 
-    expect(lightPrimaryRatio).toBeGreaterThanOrEqual(14.0); // 15.8:1
-    expect(lightMutedRatio).toBeGreaterThanOrEqual(4.5); // 5.9:1 (Passes AA)
+      const btnPrimary = document.createElement('button');
+      btnPrimary.className = 'btn-primary';
+      btnPrimary.textContent = 'Save';
+      document.body.appendChild(btnPrimary);
+      const btnStyle = window.getComputedStyle(btnPrimary);
+      const btnBg = btnStyle.backgroundColor;
+      const btnColor = btnStyle.color;
+      btnPrimary.remove();
+
+      return {
+        bodyBg: window.getComputedStyle(document.documentElement).backgroundColor,
+        titleColor: window.getComputedStyle(brandTitle).color,
+        cardBg: window.getComputedStyle(card).backgroundColor,
+        mutedColor: window.getComputedStyle(mutedCount).color,
+        btnBg,
+        btnColor,
+      };
+    });
+
+    const lightTitleRatio = getContrastRatio(parseRgb(lightMeasurements.bodyBg), parseRgb(lightMeasurements.titleColor));
+    const lightMutedRatio = getContrastRatio(parseRgb(lightMeasurements.cardBg), parseRgb(lightMeasurements.mutedColor));
+    const lightBtnRatio = getContrastRatio(parseRgb(lightMeasurements.btnBg), parseRgb(lightMeasurements.btnColor));
+
+    expect(lightTitleRatio).toBeGreaterThanOrEqual(4.5);
+    expect(lightMutedRatio).toBeGreaterThanOrEqual(4.5);
+    expect(lightBtnRatio).toBeGreaterThanOrEqual(4.5);
   });
 
   test('5. Zero Remote Fonts & Strict CSP: uses local system fonts without external font requests', async ({ openFoxLaunch, page }) => {

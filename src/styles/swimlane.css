@@ -133,7 +133,7 @@
 }
 
 .shortcut-card:focus-visible {
-  outline: 2px solid var(--border-focus);
+  outline: 2px solid var(--focus-ring-active);
   outline-offset: 2px;
 }
 
@@ -144,8 +144,8 @@
 }
 
 .shortcut-card.drag-over {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px var(--border-focus);
+  border-color: var(--focus-ring-active);
+  box-shadow: 0 0 0 2px var(--focus-ring-active);
 }
 
 .shortcut-avatar-wrapper {

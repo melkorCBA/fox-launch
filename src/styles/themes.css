@@ -102,8 +102,8 @@
 
     --border-subtle: var(--fx-neutral-dark-border);
     --border-strong: rgba(255, 255, 255, 0.20);
-    --border-focus: var(--fx-orange);
-    --focus-ring-active: var(--fx-magenta);
+    --border-focus: #37adff;
+    --focus-ring-active: #37adff;
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45);
@@ -131,8 +131,8 @@
 
     --border-subtle: var(--fx-neutral-light-border);
     --border-strong: #cfcfd8;
-    --border-focus: var(--fx-orange);
-    --focus-ring-active: var(--fx-magenta);
+    --border-focus: #0060df;
+    --focus-ring-active: #0060df;
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
@@ -159,8 +159,8 @@
 
   --border-subtle: var(--fx-neutral-dark-border);
   --border-strong: rgba(255, 255, 255, 0.20);
-  --border-focus: var(--fx-orange);
-  --focus-ring-active: var(--fx-magenta);
+  --border-focus: #37adff;
+  --focus-ring-active: #37adff;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45);
@@ -183,8 +183,8 @@
 
   --border-subtle: var(--fx-neutral-light-border);
   --border-strong: #cfcfd8;
-  --border-focus: var(--fx-orange);
-  --focus-ring-active: var(--fx-magenta);
+  --border-focus: #0060df;
+  --focus-ring-active: #0060df;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);

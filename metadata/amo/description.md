@@ -9,7 +9,6 @@ A fast, clean New Tab page that organizes your shortcuts by Firefox Multi-Accoun
 ### Keyboard Shortcuts
 - `/`: Focus search filter
 - `Escape`: Clear search filter
-- `Alt` + drag: Clone shortcut across containers
 
 ### Privacy First
 - Runs 100% locally in your browser.
