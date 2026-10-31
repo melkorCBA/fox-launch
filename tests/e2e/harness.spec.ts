@@ -139,6 +139,37 @@ test.describe('Mock WebExtension Test Harness Verification', () => {
     expect(reloadedIds).toEqual(reorderedIds);
   });
 
+  test('keyboard reordering skips search-hidden swimlanes and Escape cancels reordering cleanly', async ({ openFoxLaunch, page, mockHarness }) => {
+    await openFoxLaunch({ containers: DEFAULT_MOCK_CONTAINERS });
+
+    // Manually hide container 2 with style.display = 'none' to simulate search filtering
+    await page.evaluate(() => {
+      const lane2 = document.getElementById('swimlane-firefox-container-2');
+      if (lane2) lane2.style.display = 'none';
+    });
+
+    const handle1 = page.locator('#swimlane-firefox-container-1 .swimlane-drag-handle');
+    await handle1.focus();
+    await page.keyboard.press('ArrowDown');
+
+    // Container 1 moved down past hidden container 2 to after container 3
+    let visibleOrder = await page.locator('#swimlanes-container > .swimlane:visible').evaluateAll((lanes) =>
+      lanes.map((lane) => lane.getAttribute('data-cookie-store-id'))
+    );
+    expect(visibleOrder[0]).toBe('firefox-container-3');
+    expect(visibleOrder[1]).toBe('firefox-container-1');
+
+    // Now test Escape cancellation
+    await handle1.focus();
+    await page.keyboard.press('Enter');
+    await expect(handle1).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('ArrowDown');
+
+    await page.keyboard.press('Escape');
+    await expect(handle1).toHaveAttribute('aria-pressed', 'false');
+    await expect(handle1).toBeFocused();
+  });
+
   test('browser.tabs.create records dispatched tabs accurately', async ({ openFoxLaunch, page, mockHarness }) => {
     await openFoxLaunch();
 

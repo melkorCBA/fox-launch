@@ -127,11 +127,13 @@ export function setupSwimlaneReordering(
     const allSwimlanes = Array.from(container.children).filter(
       (child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane')
     );
-    const currentIndex = allSwimlanes.indexOf(swimlane);
+    const visibleSwimlanes = allSwimlanes.filter((lane) => lane.style.display !== 'none');
+    const currentIndex = visibleSwimlanes.indexOf(swimlane);
+    if (currentIndex === -1) return;
     const title = swimlane.querySelector('.swimlane-title')?.textContent || 'Swimlane';
 
     if (direction === 'up' && currentIndex > 0) {
-      const targetSwimlane = allSwimlanes[currentIndex - 1];
+      const targetSwimlane = visibleSwimlanes[currentIndex - 1];
       container.insertBefore(swimlane, targetSwimlane);
       handle.focus();
       const cookieStoreIds = getOrderedSwimlaneIds();
@@ -140,9 +142,9 @@ export function setupSwimlaneReordering(
       } catch (err) {
         console.error('[FoxLaunch] Failed to persist swimlane reorder:', err);
       }
-      announceStatus(`${title} moved up to position ${currentIndex} of ${allSwimlanes.length}.`);
-    } else if (direction === 'down' && currentIndex < allSwimlanes.length - 1) {
-      const targetSwimlane = allSwimlanes[currentIndex + 1];
+      announceStatus(`${title} moved up to position ${currentIndex} of ${visibleSwimlanes.length}.`);
+    } else if (direction === 'down' && currentIndex < visibleSwimlanes.length - 1) {
+      const targetSwimlane = visibleSwimlanes[currentIndex + 1];
       targetSwimlane.after(swimlane);
       handle.focus();
       const cookieStoreIds = getOrderedSwimlaneIds();
@@ -151,7 +153,7 @@ export function setupSwimlaneReordering(
       } catch (err) {
         console.error('[FoxLaunch] Failed to persist swimlane reorder:', err);
       }
-      announceStatus(`${title} moved down to position ${currentIndex + 2} of ${allSwimlanes.length}.`);
+      announceStatus(`${title} moved down to position ${currentIndex + 2} of ${visibleSwimlanes.length}.`);
     }
   };
 
@@ -218,6 +220,43 @@ export function setupSwimlaneReordering(
   container.addEventListener('dragend', clearDragState);
 
   container.addEventListener('keydown', async (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && grabbedSwimlane) {
+      event.preventDefault();
+      const grabbed = grabbedSwimlane;
+      const grabbedHandle = grabbed.querySelector<HTMLElement>('.swimlane-drag-handle');
+      const grabbedTitle = grabbed.querySelector('.swimlane-title')?.textContent || 'Swimlane';
+
+      grabbedHandle?.setAttribute('aria-pressed', 'false');
+      grabbedHandle?.classList.remove('is-grabbed');
+      grabbed.classList.remove('keyboard-reordering');
+
+      if (!container.contains(grabbed)) {
+        announceStatus(`Reorder cancelled for ${grabbedTitle}.`);
+        grabbedSwimlane = null;
+        originalIndex = -1;
+        return;
+      }
+
+      const allSwimlanes = Array.from(container.children).filter(
+        (child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane')
+      );
+      const currentIndex = allSwimlanes.indexOf(grabbed);
+      if (originalIndex !== -1 && currentIndex !== -1 && currentIndex !== originalIndex) {
+        if (originalIndex >= allSwimlanes.length - 1) {
+          container.appendChild(grabbed);
+        } else {
+          const ref = allSwimlanes[originalIndex > currentIndex ? originalIndex + 1 : originalIndex];
+          container.insertBefore(grabbed, ref);
+        }
+        await onReordered(getOrderedSwimlaneIds());
+      }
+      announceStatus(`Reorder cancelled for ${grabbedTitle}.`);
+      grabbedSwimlane = null;
+      originalIndex = -1;
+      grabbedHandle?.focus();
+      return;
+    }
+
     const target = event.target as HTMLElement | null;
     const handle = target?.closest<HTMLElement>('.swimlane-drag-handle');
     if (!handle) return;
@@ -260,34 +299,16 @@ export function setupSwimlaneReordering(
         handle.classList.remove('is-grabbed');
         swimlane.classList.remove('keyboard-reordering');
         grabbedSwimlane = null;
+        originalIndex = -1;
         const allSwimlanes = Array.from(container.children).filter(
           (child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane')
         );
-        const newIndex = allSwimlanes.indexOf(swimlane);
-        announceStatus(`${title} placed at position ${newIndex + 1} of ${allSwimlanes.length}.`);
+        const visibleSwimlanes = allSwimlanes.filter((lane) => lane.style.display !== 'none');
+        const newIndex = visibleSwimlanes.indexOf(swimlane);
+        const total = visibleSwimlanes.length;
+        announceStatus(`${title} placed at position ${newIndex + 1} of ${total}.`);
         handle.focus();
       }
-    } else if (event.key === 'Escape' && grabbedSwimlane) {
-      event.preventDefault();
-      handle.setAttribute('aria-pressed', 'false');
-      handle.classList.remove('is-grabbed');
-      grabbedSwimlane.classList.remove('keyboard-reordering');
-      const allSwimlanes = Array.from(container.children).filter(
-        (child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane')
-      );
-      const currentIndex = allSwimlanes.indexOf(grabbedSwimlane);
-      if (originalIndex !== -1 && currentIndex !== originalIndex) {
-        if (originalIndex >= allSwimlanes.length - 1) {
-          container.appendChild(grabbedSwimlane);
-        } else {
-          const ref = allSwimlanes[originalIndex > currentIndex ? originalIndex + 1 : originalIndex];
-          container.insertBefore(grabbedSwimlane, ref);
-        }
-        await onReordered(getOrderedSwimlaneIds());
-      }
-      announceStatus(`Reorder cancelled for ${title}.`);
-      grabbedSwimlane = null;
-      handle.focus();
     }
   });
 
@@ -324,11 +345,14 @@ export function setupSwimlaneReordering(
       handle.classList.remove('is-grabbed');
       swimlane.classList.remove('keyboard-reordering');
       grabbedSwimlane = null;
+      originalIndex = -1;
       const allSwimlanes = Array.from(container.children).filter(
         (child): child is HTMLElement => child instanceof HTMLElement && child.classList.contains('swimlane')
       );
-      const newIndex = allSwimlanes.indexOf(swimlane);
-      announceStatus(`${title} placed at position ${newIndex + 1} of ${allSwimlanes.length}.`);
+      const visibleSwimlanes = allSwimlanes.filter((lane) => lane.style.display !== 'none');
+      const newIndex = visibleSwimlanes.indexOf(swimlane);
+      const total = visibleSwimlanes.length;
+      announceStatus(`${title} placed at position ${newIndex + 1} of ${total}.`);
       handle.focus();
     }
   });

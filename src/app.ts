@@ -27,6 +27,7 @@ let searchController: SearchController | null = null;
 let appSettings: FoxLaunchSettings;
 let discoveredContainers: ContainerContext[] = [];
 let swimlaneReorderingInitialized = false;
+let lastMountedVisibility = '';
 
 let themeMediaQueryList: MediaQueryList | null = null;
 let themeChangeHandler: ((e: MediaQueryListEvent) => void) | null = null;
@@ -149,8 +150,30 @@ async function handleReorderShortcuts(cookieStoreId: string, _reordered: Shortcu
   await refreshSwimlane(cookieStoreId);
 }
 
-async function handleReorderSwimlanes(cookieStoreIds: string[]): Promise<void> {
-  appSettings = await saveSettings({ swimlaneOrder: cookieStoreIds });
+async function handleReorderSwimlanes(reorderedVisibleIds: string[]): Promise<void> {
+  const fullCurrentOrder = orderContainers(discoveredContainers, appSettings.swimlaneOrder).map(
+    (c) => c.cookieStoreId
+  );
+  const visibleSet = new Set(reorderedVisibleIds);
+  let visibleIndex = 0;
+  const mergedOrder = fullCurrentOrder.map((id) => {
+    if (visibleSet.has(id)) {
+      const nextVisible = reorderedVisibleIds[visibleIndex];
+      visibleIndex++;
+      return nextVisible ?? id;
+    }
+    return id;
+  });
+
+  const mergedSet = new Set(mergedOrder);
+  reorderedVisibleIds.forEach((id) => {
+    if (!mergedSet.has(id)) {
+      mergedOrder.push(id);
+      mergedSet.add(id);
+    }
+  });
+
+  appSettings = await saveSettings({ swimlaneOrder: mergedOrder });
 }
 
 function orderContainers(containers: ContainerContext[], order: string[]): ContainerContext[] {
@@ -171,6 +194,8 @@ function orderContainers(containers: ContainerContext[], order: string[]): Conta
 function mountSwimlanes(shortcutsMap: Record<string, ShortcutItem[]>): void {
   const swimlanesContainer = document.getElementById('swimlanes-container');
   if (!swimlanesContainer) return;
+
+  lastMountedVisibility = JSON.stringify(appSettings.containerVisibility);
 
   if (!swimlaneReorderingInitialized) {
     setupSwimlaneReordering(swimlanesContainer, handleReorderSwimlanes);
@@ -236,12 +261,15 @@ export async function initializeApp(): Promise<void> {
           appSettings = updated;
           applyTheme(updated.theme);
           document.documentElement.setAttribute('data-card-size', updated.cardSize);
-          const [refreshedContainers, refreshedShortcuts] = await Promise.all([
-            getContainers(),
-            getShortcuts(),
-          ]);
-          discoveredContainers = refreshedContainers;
-          mountSwimlanes(refreshedShortcuts);
+          const newVisibility = JSON.stringify(updated.containerVisibility);
+          if (newVisibility !== lastMountedVisibility) {
+            const [refreshedContainers, refreshedShortcuts] = await Promise.all([
+              getContainers(),
+              getShortcuts(),
+            ]);
+            discoveredContainers = refreshedContainers;
+            mountSwimlanes(refreshedShortcuts);
+          }
         },
         onResetDefaults: async () => {
           await renderApp();
