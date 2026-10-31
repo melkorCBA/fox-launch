@@ -97,6 +97,7 @@ test.describe('Storage Service (browser.storage.local)', () => {
     expect(settings.theme).toBe('auto');
     expect(settings.firstRunDismissed).toBe(false);
     expect(settings.swimlaneCollapse['firefox-default']).toBe(true);
+    expect(settings.swimlaneOrder).toEqual([]);
   });
 
   test('saveSettings merges partial settings properly and preserves other fields', async () => {
@@ -123,6 +124,19 @@ test.describe('Storage Service (browser.storage.local)', () => {
     expect(s2.swimlaneCollapse['firefox-default']).toBe(true);
     expect(s2.swimlaneCollapse['firefox-container-1']).toBe(false);
     expect(s2.swimlaneCollapse['firefox-container-2']).toBe(true);
+  });
+
+  test('saveSettings persists swimlane order alongside other settings', async () => {
+    await saveSettings({ swimlaneOrder: ['firefox-container-2', 'firefox-container-1'] });
+    expect((await getSettings()).swimlaneOrder).toEqual([
+      'firefox-container-2',
+      'firefox-container-1',
+    ]);
+
+    await saveSettings({ theme: 'dark' });
+    const settings = await getSettings();
+    expect(settings.theme).toBe('dark');
+    expect(settings.swimlaneOrder).toEqual(['firefox-container-2', 'firefox-container-1']);
   });
 
   test('addShortcut generates id, timestamp, order, and domain', async () => {

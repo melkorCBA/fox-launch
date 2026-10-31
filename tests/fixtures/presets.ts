@@ -84,6 +84,7 @@ export const DEFAULT_SETTINGS: FoxLaunchSettings = {
   swimlaneCollapse: {
     'firefox-default': true, // Collapsed by default per pilot-plan §D6
   },
+  swimlaneOrder: [],
 };
 
 export const ONBOARDING_SETTINGS: FoxLaunchSettings = {
@@ -94,6 +95,7 @@ export const ONBOARDING_SETTINGS: FoxLaunchSettings = {
   swimlaneCollapse: {
     'firefox-default': true,
   },
+  swimlaneOrder: [],
 };
 
 export function makeShortcut(
