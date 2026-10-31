@@ -195,9 +195,10 @@ async function request(endpoint, options, operation) {
 async function waitForPreviewProcessing(previewId, timeoutMs = Number(process.env.AMO_PREVIEW_TIMEOUT_MS) || 30_000, pollIntervalMs = 500) {
   const startTime = Date.now();
   while (Date.now() - startTime < timeoutMs) {
-    const preview = JSON.parse(
-      await request(`${url}previews/${previewId}/`, { method: 'GET' }, `Check processing for preview ${previewId}`)
+    const addon = JSON.parse(
+      await request(url, { method: 'GET' }, `Check processing for preview ${previewId}`)
     );
+    const preview = addon.previews?.find((p) => p.id === previewId);
     if (preview.thumbnail_url && preview.image_url) {
       return preview;
     }
