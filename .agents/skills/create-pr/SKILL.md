@@ -5,7 +5,7 @@ description: Prepare and submit standard GitHub Pull Requests with automated AMO
 
 # Create PR
 
-Automated, safe workflow to inspect branch changes, determine whether public AMO product listing files need updating, review proposed listing diffs with the user, and publish clean GitHub Pull Requests.
+Automated, safe workflow to inspect branch changes, determine whether public AMO product listing files need updating, review proposed listing diffs with the user, and publish clean GitHub Pull Requests adhering to Conventional Commits v1.0.0.
 
 ---
 
@@ -82,23 +82,33 @@ Options:
    ```powershell
    git push -u origin <current-branch>
    ```
-2. Formulate **Title** adhering to Conventional Commits:
+2. Formulate **Title** strictly adhering to [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) and `.agents/rules/conventional-commits.md`:
    - Format: `<type>(<scope>): <concise summary>` (e.g., `feat(swimlane): add drag-and-drop reordering`)
-3. Formulate **Body** in plain language (simple, short, minimum technical jargon):
+   - Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+   - Imperative mood, lowercase initial letter, no trailing period.
+   - Note: Automated CI check (`.github/workflows/semantic-pr.yml`) validates this format and will reject non-compliant titles.
+3. Formulate **Body** in plain language (simple, short, minimum technical jargon) matching `.github/pull_request_template.md`:
    ```markdown
-   ## Summary
-   <1-2 sentences in simple English explaining what this PR accomplishes>
+   ## Summary & Motivation
+   <1-2 sentences in simple English explaining what this PR accomplishes and why>
 
    ## Key Changes
    - <Simple bullet points of changes>
 
+   ## Conventional Commits Verification
+   - [x] PR title adheres to [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
+
    ## AMO Store Listing Impact
-   - [x] Updated `metadata/amo/` (or [ ] No listing update needed - internal changes only)
+   - [x] Updated `metadata/amo/` (or [ ] No listing impact (internal change only))
 
    ## Testing & Verification
-   - [x] Typecheck and build passed
-   - [x] Linter passed
-   - [x] Automated tests passed
+   - [x] `pnpm run typecheck` (TypeScript)
+   - [x] `pnpm run build` (Vite)
+   - [x] `pnpm run lint:ext` (Mozilla WebExtension linter)
+   - [x] `pnpm run test:e2e` (Playwright Firefox suite)
+
+   ## Linked Issues
+   Fixes #...
    ```
 4. **Approval Gate Before Execution**:
    Present the proposed title, body, and exact `gh pr create` command, and request confirmation before execution:

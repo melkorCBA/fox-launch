@@ -5,7 +5,7 @@ description: Guide and automate the release lifecycle from main to release, hand
 
 # Create Release
 
-Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozilla Add-ons (AMO) via the `release` branch and GitHub Actions.
+Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozilla Add-ons (AMO) via the `release` branch and GitHub Actions, driven by Conventional Commits v1.0.0.
 
 ---
 
@@ -47,14 +47,14 @@ Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozil
    ```powershell
    node -p "require('./package.json').version"
    ```
-2. Inspect full commit messages (including bodies and footers) of the new commits:
+2. Inspect full commit messages (including bodies and footers) of the new commits adhering to Conventional Commits:
    ```powershell
    git log release..origin/main
    ```
 3. Analyze the full commits and the `[Unreleased]` section of `CHANGELOG.md`:
    - If commits or footers contain breaking changes (`BREAKING CHANGE:` or `<type>!:`): recommend **Major** (e.g. `1.0.0` → `2.0.0`).
    - If commits contain `feat:` or `feat(...)`: recommend **Minor** (e.g. `1.0.0` → `1.1.0`).
-   - If only `fix:`, `chore:`, or `docs:`: recommend **Patch** (e.g. `1.0.0` → `1.0.1`).
+   - If only `fix:`, `chore:`, `perf:`, `refactor:`, or `docs:`: recommend **Patch** (e.g. `1.0.0` → `1.0.1`).
 4. **Decision Point 2: Select Version Bump**
    Prompt the user via `ask_question` with the recommended version and alternatives.
 
@@ -67,6 +67,13 @@ Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozil
    ```
 2. Update `manifest.json` version to match `<new-version>` identically.
 3. Update `CHANGELOG.md`:
+   - Categorize commit entries according to Keep a Changelog mapped from Conventional Commits:
+     - `feat` &rarr; `### Added`
+     - `fix` &rarr; `### Fixed`
+     - `refactor`, `perf`, breaking changes &rarr; `### Changed`
+     - deprecations &rarr; `### Deprecated`
+     - removals &rarr; `### Removed`
+     - security fixes &rarr; `### Security`
    - Move notes currently under `## [Unreleased]` into a new section:
      ```markdown
      ## [<new-version>] - YYYY-MM-DD

@@ -1,3 +1,18 @@
+<!--
+PR TITLE SPECIFICATION:
+PR titles MUST strictly follow Conventional Commits v1.0.0:
+https://www.conventionalcommits.org/en/v1.0.0/
+
+Format: <type>[optional scope]: <description>
+Examples:
+  feat(swimlane): add drag-and-drop shortcut reordering
+  fix(storage): resolve storage quota overflow handling
+  docs(readme): update developer onboarding instructions
+  chore(ci): enforce semantic pull request title checks
+
+Allowed Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+-->
+
 ## Summary & Motivation
 
 <!-- What does this PR do and why? -->
@@ -6,6 +21,10 @@
 
 -
 -
+
+## Conventional Commits Verification
+
+- [ ] PR title adheres to [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) (`<type>(<scope>): <summary>`)
 
 ## AMO Store Listing Impact
 
