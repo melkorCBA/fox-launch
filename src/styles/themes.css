@@ -1,9 +1,36 @@
 /**
  * FoxLaunch — Design Tokens & Theme System
  * Strict CSP compliant: Zero external font imports or remote assets.
+ * Master Specification: docs/brand/foxlaunch-brand-guide.md
  */
 
 :root {
+  /* ========================================================================
+     Brand Identity Primitives (Metropolis / Acorn Design Tokens)
+     Upstream primitives that change infrequently.
+     ======================================================================== */
+  --fx-orange: #FF7139;
+  --fx-orange-hover: #E05620;
+  --fx-violet: #8000FF;
+  --fx-magenta: #FF2A85;
+  --fx-yellow: #FFD43B;
+
+  /* Acorn Dark Neutral Primitives */
+  --fx-neutral-dark-0: #1C1B22; /* Obsidian Chrome base */
+  --fx-neutral-dark-1: #2B2A33; /* Elevated Surface */
+  --fx-neutral-dark-2: #383742; /* Hover Surface */
+  --fx-neutral-dark-text: #FBFBFE; /* Pure White / Ink */
+  --fx-neutral-dark-muted: #A6A4B6; /* Slate Lavender (WCAG AA compliant: 5.7:1) */
+  --fx-neutral-dark-border: rgba(255, 255, 255, 0.10);
+
+  /* Acorn Light Neutral Primitives */
+  --fx-neutral-light-0: #F9F9FB; /* Clean Crisp Light base */
+  --fx-neutral-light-1: #F0F0F4; /* Light Surface */
+  --fx-neutral-light-2: #E0E0E6; /* Light Hover Surface */
+  --fx-neutral-light-ink: #15141A; /* Ink primary text */
+  --fx-neutral-light-muted: #5B5B66; /* Graphite muted text (WCAG AA compliant: 5.9:1) */
+  --fx-neutral-light-border: rgba(0, 0, 0, 0.12);
+
   /* Firefox Native Container Identity Colors */
   --container-blue: #37adff;
   --container-turquoise: #00c79a;
@@ -16,7 +43,7 @@
   --container-toolbar: #808080;
   --container-default: #808080;
 
-  /* Typography Stack (System fonts for sub-100ms cold render) */
+  /* Typography Stack (System fonts for sub-10ms cold render, zero network requests) */
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
@@ -61,20 +88,22 @@
    ========================================================================== */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-primary: #121214;
-    --bg-secondary: #1c1c1f;
-    --bg-tertiary: #2a2a2e;
-    --bg-surface: #232326;
-    --bg-overlay: rgba(0, 0, 0, 0.75);
+    --bg-primary: var(--fx-neutral-dark-0);
+    --bg-secondary: var(--fx-neutral-dark-1);
+    --bg-tertiary: #201F27;
+    --bg-surface: var(--fx-neutral-dark-1);
+    --bg-surface-hover: var(--fx-neutral-dark-2);
+    --bg-overlay: rgba(28, 27, 34, 0.85);
 
-    --text-primary: #fbfbfe;
-    --text-secondary: #cfcfd8;
-    --text-muted: #8f8f9d;
-    --text-inverse: #121214;
+    --text-primary: var(--fx-neutral-dark-text);
+    --text-secondary: #CFCFD8;
+    --text-muted: var(--fx-neutral-dark-muted);
+    --text-inverse: var(--fx-neutral-light-ink);
 
-    --border-subtle: #38383d;
-    --border-strong: #52525e;
-    --border-focus: #37adff;
+    --border-subtle: var(--fx-neutral-dark-border);
+    --border-strong: rgba(255, 255, 255, 0.20);
+    --border-focus: var(--fx-orange);
+    --focus-ring-active: var(--fx-magenta);
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45);
@@ -88,20 +117,22 @@
    ========================================================================== */
 @media (prefers-color-scheme: light) {
   :root {
-    --bg-primary: #f9f9fb;
+    --bg-primary: var(--fx-neutral-light-0);
     --bg-secondary: #ffffff;
-    --bg-tertiary: #f0f0f4;
-    --bg-surface: #ffffff;
+    --bg-tertiary: var(--fx-neutral-light-1);
+    --bg-surface: var(--fx-neutral-light-1);
+    --bg-surface-hover: var(--fx-neutral-light-2);
     --bg-overlay: rgba(0, 0, 0, 0.45);
 
-    --text-primary: #15141a;
-    --text-secondary: #5b5b66;
-    --text-muted: #8f8f9d;
+    --text-primary: var(--fx-neutral-light-ink);
+    --text-secondary: var(--fx-neutral-light-muted);
+    --text-muted: var(--fx-neutral-light-muted);
     --text-inverse: #ffffff;
 
-    --border-subtle: #e0e0e6;
+    --border-subtle: var(--fx-neutral-light-border);
     --border-strong: #cfcfd8;
-    --border-focus: #0060df;
+    --border-focus: var(--fx-orange);
+    --focus-ring-active: var(--fx-magenta);
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
@@ -114,20 +145,22 @@
    Explicit Manual Theme Overrides (Settings selection)
    ========================================================================== */
 [data-theme="dark"] {
-  --bg-primary: #121214;
-  --bg-secondary: #1c1c1f;
-  --bg-tertiary: #2a2a2e;
-  --bg-surface: #232326;
-  --bg-overlay: rgba(0, 0, 0, 0.75);
+  --bg-primary: var(--fx-neutral-dark-0);
+  --bg-secondary: var(--fx-neutral-dark-1);
+  --bg-tertiary: #201F27;
+  --bg-surface: var(--fx-neutral-dark-1);
+  --bg-surface-hover: var(--fx-neutral-dark-2);
+  --bg-overlay: rgba(28, 27, 34, 0.85);
 
-  --text-primary: #fbfbfe;
-  --text-secondary: #cfcfd8;
-  --text-muted: #8f8f9d;
-  --text-inverse: #121214;
+  --text-primary: var(--fx-neutral-dark-text);
+  --text-secondary: #CFCFD8;
+  --text-muted: var(--fx-neutral-dark-muted);
+  --text-inverse: var(--fx-neutral-light-ink);
 
-  --border-subtle: #38383d;
-  --border-strong: #52525e;
-  --border-focus: #37adff;
+  --border-subtle: var(--fx-neutral-dark-border);
+  --border-strong: rgba(255, 255, 255, 0.20);
+  --border-focus: var(--fx-orange);
+  --focus-ring-active: var(--fx-magenta);
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45);
@@ -136,20 +169,22 @@
 }
 
 [data-theme="light"] {
-  --bg-primary: #f9f9fb;
+  --bg-primary: var(--fx-neutral-light-0);
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f0f0f4;
-  --bg-surface: #ffffff;
+  --bg-tertiary: var(--fx-neutral-light-1);
+  --bg-surface: var(--fx-neutral-light-1);
+  --bg-surface-hover: var(--fx-neutral-light-2);
   --bg-overlay: rgba(0, 0, 0, 0.45);
 
-  --text-primary: #15141a;
-  --text-secondary: #5b5b66;
-  --text-muted: #8f8f9d;
+  --text-primary: var(--fx-neutral-light-ink);
+  --text-secondary: var(--fx-neutral-light-muted);
+  --text-muted: var(--fx-neutral-light-muted);
   --text-inverse: #ffffff;
 
-  --border-subtle: #e0e0e6;
+  --border-subtle: var(--fx-neutral-light-border);
   --border-strong: #cfcfd8;
-  --border-focus: #0060df;
+  --border-focus: var(--fx-orange);
+  --focus-ring-active: var(--fx-magenta);
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
