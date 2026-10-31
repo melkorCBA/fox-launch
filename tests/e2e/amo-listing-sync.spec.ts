@@ -56,14 +56,18 @@ function runSync(dryRun = false, failure = '', invalidImage = false) {
         }
         if (failure === 'network' && options.method === 'POST') throw new Error('connection reset');
         if (options.method === 'GET') {
-          if (url.includes('/previews/')) {
+          const hasPost = requests.some((r) => r.method === 'POST');
+          if (hasPost) {
             if (failure === 'processing') {
-              return Response.json({ id: Number(url.split('/').at(-2)) });
+              return Response.json({ previews: [{ id: 11 }, { id: 12 }, { id: 101 }, { id: 102 }] });
             }
             return Response.json({
-              id: Number(url.split('/').at(-2)),
-              image_url: 'https://addons.mozilla.org/image.png',
-              thumbnail_url: 'https://addons.mozilla.org/thumb.png',
+              previews: [
+                { id: 11 },
+                { id: 12 },
+                { id: 101, image_url: 'https://addons.mozilla.org/image.png', thumbnail_url: 'https://addons.mozilla.org/thumb.png' },
+                { id: 102, image_url: 'https://addons.mozilla.org/image.png', thumbnail_url: 'https://addons.mozilla.org/thumb.png' },
+              ],
             });
           }
           return Response.json({ previews: [{ id: 11 }, { id: 12 }] });
