@@ -166,6 +166,11 @@ async function handleReorderShortcuts(cookieStoreId: string, _reordered: Shortcu
 }
 
 export async function initializeApp(): Promise<void> {
+  const versionEl = document.getElementById('app-version');
+  if (versionEl && typeof browser !== 'undefined' && browser.runtime?.getManifest) {
+    versionEl.textContent = ` v${browser.runtime.getManifest().version}`;
+  }
+
   const startTime = performance.now();
   try {
     performance.mark('foxlaunch-mount-start');
