@@ -193,6 +193,9 @@ async function request(endpoint, options, operation) {
       const m = parsed.detail?.match(/(\d+)\s+seconds/);
       if (m) waitSec = parseInt(m[1], 10) + 1;
     } catch {}
+    if (waitSec > 120) {
+      throw new Error(`AMO API rate limit exceeded: throttled for ${waitSec}s (${Math.round(waitSec / 60)} minutes). Please retry later.`);
+    }
     console.log(`⏳ Rate limited (429). Waiting ${waitSec}s before retrying...`);
     await new Promise((resolve) => setTimeout(resolve, waitSec * 1000));
     return request(endpoint, options, operation);
