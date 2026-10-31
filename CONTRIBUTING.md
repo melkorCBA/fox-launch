@@ -102,3 +102,19 @@ The AMO store listing is maintained as code under `metadata/amo/`. Changes there
 Release preparation is maintainer-led. The coding-agent workflows named `/create-pr` and `/create-release` provide guidance for PR creation and release preparation. Releases use the `release` branch and a version tag; `package.json`, `manifest.json`, and the changelog must agree. The tagged release workflow runs quality checks, packages the extension, and publishes to AMO and GitHub Packages. If listing files changed, a separate workflow syncs the AMO listing. A release may require approval through GitHub’s `production-amo` environment.
 
 For the full release steps and approval gates, see [`.agents/skills/create-release/SKILL.md`](.agents/skills/create-release/SKILL.md). Contributors should not publish a release or change the public listing as part of routine feature work without maintainer coordination.
+
+### Screenshot updates
+
+The **Sync AMO Product Listing** workflow uploads the existing dark and light screenshots committed under `metadata/amo/screenshots/`, including when called by a release. Screenshot generation is handled separately by the release skill. The sync workflow does not capture or regenerate images, install Playwright, or alter local listing assets. Missing or invalid PNG screenshots stop syncing before any AMO requests.
+
+For a local preview from the repository root:
+
+```bash
+node scripts/sync-amo-listing.mjs --dry-run
+```
+
+Review the images and listing diff before committing any `metadata/amo/` changes. The workflow retains the `production-amo` environment approval gate. Dispatch it with `dry_run: true` to validate the existing screenshots and print the proposed metadata and image filenames without modifying images, authenticating, or sending any requests to AMO.
+
+Live sync uploads the two committed screenshots in dark/light order using AMO's multipart preview API, updates the listing metadata, then removes the previous previews so repeated syncs do not accumulate duplicates. The hero banner under `metadata/amo/assets/` is not a listing screenshot and is not uploaded. Upload or metadata failures leave previous previews in place and attempt to roll back new uploads. All API and cleanup failures fail the workflow explicitly; if rollback or old-preview cleanup fails, inspect the AMO listing before retrying. AMO does not provide an atomic listing-and-preview update.
+
+These network operations are limited to publishing automation; the extension remains local-only.
