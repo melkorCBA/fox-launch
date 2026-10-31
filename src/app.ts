@@ -209,6 +209,7 @@ export async function initializeApp(): Promise<void> {
 
   // Apply persistent theme and setup reactive prefers-color-scheme listener
   applyTheme(settings.theme);
+  document.documentElement.setAttribute('data-card-size', settings.cardSize);
 
   // Mount swimlanes
   const swimlanesContainer = document.getElementById('swimlanes-container');

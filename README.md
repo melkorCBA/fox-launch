@@ -21,6 +21,7 @@ FoxLaunch organizes your shortcuts into dedicated **Firefox Multi-Account Contai
 - ⚙️ **Customizable Settings**:
   - Launcher tab behavior: `Keep launcher tab open` or `Close launcher tab on launch`.
   - Theme mode: `System Default`, `Dark`, or `Light`.
+  - Card size: `Small`, `Medium` (default), or `Large`, applied instantly across all swimlanes and saved locally.
   - Factory reset with two-stage confirmation.
 - 🚶 **First-Run Onboarding**: Guided 4-step walkthrough overlay for new users with keyboard navigation and step indicators.
 - 🔒 **Privacy & Strict CSP**: Manifest V3 compliant (`script-src 'self'`), zero telemetry, zero analytics, zero cookies, zero `innerHTML` usage.
