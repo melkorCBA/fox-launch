@@ -170,6 +170,8 @@ function generateAmoJwt(iss, sec) {
 
 const url = `https://addons.mozilla.org/api/v5/addons/addon/${encodeURIComponent(addonId)}/`;
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function request(endpoint, options, operation) {
   let response;
   try {
@@ -188,16 +190,21 @@ async function request(endpoint, options, operation) {
   const responseBody = await response.text();
   if (response.status === 429) {
     let waitSec = 60;
-    try {
-      const parsed = JSON.parse(responseBody);
-      const m = parsed.detail?.match(/(\d+)\s+seconds/);
-      if (m) waitSec = parseInt(m[1], 10) + 1;
-    } catch {}
+    const retryAfter = response.headers.get('retry-after');
+    if (retryAfter && !isNaN(Number(retryAfter))) {
+      waitSec = parseInt(retryAfter, 10);
+    } else {
+      try {
+        const parsed = JSON.parse(responseBody);
+        const m = parsed.detail?.match(/(\d+)\s+seconds/);
+        if (m) waitSec = parseInt(m[1], 10) + 1;
+      } catch {}
+    }
     if (waitSec > 120) {
       throw new Error(`AMO API rate limit exceeded: throttled for ${waitSec}s (${Math.round(waitSec / 60)} minutes). Please retry later.`);
     }
     console.log(`⏳ Rate limited (429). Waiting ${waitSec}s before retrying...`);
-    await new Promise((resolve) => setTimeout(resolve, waitSec * 1000));
+    await delay(waitSec * 1000);
     return request(endpoint, options, operation);
   }
   if (!response.ok) {
@@ -206,7 +213,7 @@ async function request(endpoint, options, operation) {
   return responseBody;
 }
 
-async function waitForPreviewProcessing(previewId, timeoutMs = Number(process.env.AMO_PREVIEW_TIMEOUT_MS) || 30_000, pollIntervalMs = 500) {
+async function waitForPreviewProcessing(previewId, timeoutMs = Number(process.env.AMO_PREVIEW_TIMEOUT_MS) || 30_000, pollIntervalMs = 1500) {
   const startTime = Date.now();
   while (Date.now() - startTime < timeoutMs) {
     const addon = JSON.parse(
@@ -229,6 +236,7 @@ try {
     throw new Error('AMO returned an invalid previews list; refusing to replace screenshots.');
   }
   for (const [position, { filename, image }] of screenshots.entries()) {
+    if (position > 0) await delay(1000);
     console.log(`\n🚀 Uploading screenshot ${filename}...`);
     const form = new FormData();
     form.append('image', new Blob([image], { type: 'image/png' }), filename);
@@ -260,6 +268,7 @@ try {
 
   // Keep the old screenshots until every upload, processing, and the metadata update succeeds.
   for (const { id } of addon.previews) {
+    await delay(1000);
     await request(`${url}previews/${id}/`, { method: 'DELETE' }, `Delete old screenshot ${id}`);
   }
 
