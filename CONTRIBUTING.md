@@ -65,6 +65,8 @@ pnpm run test:e2e
 
 The Playwright suite runs in Firefox. For the complete local CI sequence, `pnpm test` runs typecheck, build, extension lint, and E2E tests. CI also validates the AMO listing files with `node scripts/sync-amo-listing.mjs --dry-run`.
 
+The brand-guide E2E test rewrites the tracked screenshots in `metadata/amo/screenshots/`. Review and restore generated screenshot changes after testing unless you intend to update the listing.
+
 Before opening a pull request, run the checks relevant to your change and describe the results. If a check cannot be run locally, mention that in the pull request.
 
 ## Git and Pull Request Conventions
