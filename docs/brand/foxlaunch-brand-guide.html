@@ -20,7 +20,7 @@
       --border-subtle: rgba(255, 255, 255, 0.1);
       --border-active: rgba(255, 113, 57, 0.5);
       --text-main: #FBFBFE;
-      --text-muted: #8F8E9D;
+      --text-muted: #A6A4B6;
       --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
@@ -97,17 +97,17 @@
 
     .grid-2 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
       gap: 24px;
     }
     .grid-3 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
       gap: 20px;
     }
     .grid-4 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
       gap: 16px;
     }
 
@@ -147,17 +147,29 @@
       color: #FFF;
     }
 
-    /* Color Swatch */
-    .swatch {
+    /* Color Swatch Button */
+    button.swatch {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      color: inherit;
       border-radius: 8px;
       overflow: hidden;
       border: 1px solid var(--border-subtle);
       background: var(--bg-surface);
       cursor: pointer;
-      transition: transform 0.15s ease, border-color 0.15s ease;
+      padding: 0;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
-    .swatch:hover {
+    button.swatch:hover {
       transform: translateY(-2px);
+      border-color: var(--fx-orange);
+    }
+    button.swatch:focus-visible {
+      outline: 2px solid var(--fx-orange);
+      outline-offset: 2px;
       border-color: var(--fx-orange);
     }
     .swatch-color {
@@ -181,6 +193,38 @@
       font-size: 11px;
       color: var(--text-muted);
       margin-top: 4px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      background: #15141A;
+      color: #FFF;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+      z-index: 1000;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast.success {
+      border-color: #10B981;
+      color: #D1FAE5;
+    }
+    .toast.error {
+      border-color: #EF4444;
+      color: #FEE2E2;
     }
 
     /* Do / Don't Boxes */
@@ -325,41 +369,41 @@
       <div class="section-title">03 • Color Palette & Design Tokens</div>
       <div class="grid-4">
         
-        <div class="swatch" onclick="navigator.clipboard.writeText('#FF7139'); alert('Copied #FF7139');">
+        <button type="button" class="swatch" aria-label="Copy Firefox Flame color #FF7139" onclick="copyColor('#FF7139', 'Firefox Flame')">
           <div class="swatch-color" style="background: #FF7139;"></div>
           <div class="swatch-info">
             <div class="swatch-name">Firefox Flame</div>
             <div class="swatch-hex">#FF7139</div>
             <div class="swatch-role">Primary Accent / CTAs</div>
           </div>
-        </div>
+        </button>
 
-        <div class="swatch" onclick="navigator.clipboard.writeText('#8000FF'); alert('Copied #8000FF');">
+        <button type="button" class="swatch" aria-label="Copy Mozilla Violet color #8000FF" onclick="copyColor('#8000FF', 'Mozilla Violet')">
           <div class="swatch-color" style="background: #8000FF;"></div>
           <div class="swatch-info">
             <div class="swatch-name">Mozilla Violet</div>
             <div class="swatch-hex">#8000FF</div>
             <div class="swatch-role">Depth Accent</div>
           </div>
-        </div>
+        </button>
 
-        <div class="swatch" onclick="navigator.clipboard.writeText('#FF2A85'); alert('Copied #FF2A85');">
+        <button type="button" class="swatch" aria-label="Copy Firefox Magenta color #FF2A85" onclick="copyColor('#FF2A85', 'Firefox Magenta')">
           <div class="swatch-color" style="background: #FF2A85;"></div>
           <div class="swatch-info">
             <div class="swatch-name">Firefox Magenta</div>
             <div class="swatch-hex">#FF2A85</div>
             <div class="swatch-role">Active Focus Rings</div>
           </div>
-        </div>
+        </button>
 
-        <div class="swatch" onclick="navigator.clipboard.writeText('#1C1B22'); alert('Copied #1C1B22');">
+        <button type="button" class="swatch" aria-label="Copy Obsidian Base color #1C1B22" onclick="copyColor('#1C1B22', 'Obsidian Base')">
           <div class="swatch-color" style="background: #1C1B22;"></div>
           <div class="swatch-info">
             <div class="swatch-name">Obsidian Base</div>
             <div class="swatch-hex">#1C1B22</div>
             <div class="swatch-role">Firefox Dark Chrome</div>
           </div>
-        </div>
+        </button>
 
       </div>
     </section>
@@ -407,6 +451,56 @@
     </section>
 
   </div>
+
+  <div id="toast" role="status" aria-live="polite" class="toast"></div>
+
+  <script>
+    let toastTimer = null;
+    function showToast(message, isSuccess = true) {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.className = 'toast show ' + (isSuccess ? 'success' : 'error');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.className = 'toast';
+      }, 3000);
+    }
+
+    async function copyColor(hex, label) {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(hex);
+          showToast(`Copied ${label} (${hex}) to clipboard!`, true);
+        } else {
+          fallbackCopy(hex, label);
+        }
+      } catch (err) {
+        fallbackCopy(hex, label);
+      }
+    }
+
+    function fallbackCopy(hex, label) {
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = hex;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (successful) {
+          showToast(`Copied ${label} (${hex}) to clipboard!`, true);
+        } else {
+          showToast(`Unable to copy ${hex}. Please copy manually.`, false);
+        }
+      } catch (e) {
+        showToast(`Unable to copy ${hex}. Please copy manually.`, false);
+      }
+    }
+  </script>
 
 </body>
 </html>

@@ -124,7 +124,7 @@ Derived from Mozilla's **Metropolis / Acorn Design Tokens** to ensure 100% visua
 | `--bg-surface` | Elevated Surface | `#2B2A33` | Swimlane card base | `#F0F0F4` |
 | `--bg-surface-hover`| Hover Surface | `#383742` | Shortcut tile hover | `#E0E0E6` |
 | `--text-primary` | Pure White / Ink | `#FBFBFE` | Primary text | `#15141A` |
-| `--text-muted` | Slate Gray | `#8F8E9D` | Secondary text | `#5B5B66` |
+| `--text-muted` | Slate Lavender | `#A6A4B6` | Secondary text (WCAG AA compliant) | `#5B5B66` |
 | `--border-subtle` | Boundary Line | `rgba(255, 255, 255, 0.10)` | Card borders | `rgba(0, 0, 0, 0.12)` |
 
 ### 4.3 Firefox Native Container Identity Colors
@@ -142,6 +142,7 @@ Colors dynamically mapped from `browser.contextualIdentities`:
 ### 4.4 Accessibility Compliance
 All text and interactive element pairings strictly comply with **WCAG 2.1 AA** standards:
 * `--text-primary` on `--bg-base`: Contrast ratio **14.8:1** (Exceeds AAA).
+* `--text-muted` (`#A6A4B6`) on `--bg-surface` (`#2B2A33`): Contrast ratio **5.7:1** (Comfortably exceeds WCAG AA 4.5:1 requirement for normal text).
 * `--fx-orange` on `--bg-surface`: Contrast ratio **4.9:1** (Passes AA for large text & UI controls).
 * Procedural SVG avatars dynamically calculate luminance to ensure avatar text achieves AA contrast against all container background hues.
 
