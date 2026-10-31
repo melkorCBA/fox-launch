@@ -5,8 +5,9 @@
  * reset-to-defaults with two-stage confirmation, and WCAG 2.1 AA focus management.
  */
 
-import type { FoxLaunchSettings, TabBehavior, ThemeMode } from '../types';
+import type { ContainerContext, ContainerVisibility, FoxLaunchSettings, TabBehavior, ThemeMode } from '../types';
 import { getSettings, saveSettings, resetToDefaults } from '../services/storage';
+import { getContainers } from '../services/containers';
 
 export interface SettingsModalOptions {
   currentSettings?: FoxLaunchSettings;
@@ -72,7 +73,7 @@ export function openSettingsModal(
     initialSettings = opts.currentSettings;
   }
 
-  const renderModal = (activeSettings: FoxLaunchSettings) => {
+  const renderModal = (activeSettings: FoxLaunchSettings, containers: ContainerContext[]) => {
     const modalRoot = document.getElementById('modal-root');
     if (!modalRoot) return;
 
@@ -208,7 +209,112 @@ export function openSettingsModal(
     themeSection.appendChild(themeOptionsGroup);
     content.appendChild(themeSection);
 
-    // Section 3: Reset to Defaults (Inline Two-Stage Confirmation)
+    // Section 3: Container Swimlane Visibility
+    const visibilitySection = document.createElement('div');
+    visibilitySection.className = 'settings-section';
+    const visibilityTitle = document.createElement('span');
+    visibilityTitle.id = 'container-visibility-title';
+    visibilityTitle.className = 'settings-section-title';
+    visibilityTitle.textContent = 'Container Swimlane Visibility';
+    visibilitySection.appendChild(visibilityTitle);
+
+    const visibilityOptions = document.createElement('div');
+    visibilityOptions.className = 'settings-options-group';
+    visibilityOptions.setAttribute('role', 'radiogroup');
+    visibilityOptions.setAttribute('aria-labelledby', visibilityTitle.id);
+
+    const filterControls = document.createElement('fieldset');
+    filterControls.className = 'settings-container-filters';
+    filterControls.disabled = activeSettings.containerVisibility.mode === 'all';
+    const legend = document.createElement('legend');
+    legend.className = 'form-label';
+    legend.textContent = 'Match selected containers or name patterns';
+    filterControls.appendChild(legend);
+
+    let visibility = activeSettings.containerVisibility;
+    let pendingSave = Promise.resolve();
+    const persistVisibility = () => {
+      const snapshot = { ...visibility, cookieStoreIds: [...visibility.cookieStoreIds] };
+      pendingSave = pendingSave.then(async () => {
+        const updated = await saveSettings({ containerVisibility: snapshot });
+        activeSettings.containerVisibility = snapshot;
+        onSettingsChanged?.(updated);
+      }).catch((error) => {
+        console.error('[FoxLaunch] Error saving container visibility:', error);
+      });
+    };
+
+    const createVisibilityOption = (mode: ContainerVisibility['mode'], label: string) => {
+      const labelEl = document.createElement('label');
+      labelEl.className = 'radio-option';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'containerVisibility';
+      radio.value = mode;
+      radio.checked = visibility.mode === mode;
+      radio.addEventListener('change', () => {
+        if (!radio.checked) return;
+        visibility = { ...visibility, mode };
+        filterControls.disabled = mode === 'all';
+        persistVisibility();
+      });
+      labelEl.append(radio, document.createTextNode(label));
+      return labelEl;
+    };
+    visibilityOptions.append(
+      createVisibilityOption('all', 'Show all'),
+      createVisibilityOption('only', 'Only show these'),
+      createVisibilityOption('hide', 'Hide these')
+    );
+    visibilitySection.appendChild(visibilityOptions);
+
+    const containerList = document.createElement('div');
+    containerList.className = 'settings-container-list';
+    containers.filter((container) => !container.isDefault).forEach((container) => {
+      const label = document.createElement('label');
+      label.className = 'radio-option';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = container.cookieStoreId;
+      checkbox.checked = visibility.cookieStoreIds.includes(container.cookieStoreId);
+      checkbox.addEventListener('change', () => {
+        const ids = visibility.cookieStoreIds.filter((id) => id !== container.cookieStoreId);
+        if (checkbox.checked) ids.push(container.cookieStoreId);
+        visibility = { ...visibility, cookieStoreIds: ids };
+        persistVisibility();
+      });
+      label.append(checkbox, document.createTextNode(container.name));
+      containerList.appendChild(label);
+    });
+    filterControls.appendChild(containerList);
+
+    const patternLabel = document.createElement('label');
+    patternLabel.className = 'form-label';
+    patternLabel.htmlFor = 'container-name-patterns';
+    patternLabel.textContent = 'Container name patterns';
+    const patterns = document.createElement('textarea');
+    patterns.id = patternLabel.htmlFor;
+    patterns.className = 'form-input container-name-patterns';
+    patterns.rows = 3;
+    patterns.placeholder = 'Work*\nDev-*';
+    patterns.value = visibility.namePatterns.join('\n');
+    patterns.setAttribute('aria-describedby', 'container-pattern-help');
+    patterns.addEventListener('input', () => {
+      visibility = {
+        ...visibility,
+        namePatterns: patterns.value.split('\n').map((pattern) => pattern.trim()).filter(Boolean),
+      };
+      persistVisibility();
+    });
+    const patternHelp = document.createElement('p');
+    patternHelp.id = 'container-pattern-help';
+    patternHelp.className = 'form-label';
+    patternHelp.textContent = 'One pattern per line. * matches any text; names match case-insensitively. The default context always remains visible. Changes save locally.';
+    filterControls.append(patternLabel, patterns, patternHelp);
+    visibilitySection.appendChild(filterControls);
+    content.appendChild(visibilitySection);
+
+    // Section 4: Reset to Defaults (Inline Two-Stage Confirmation)
     const resetSection = document.createElement('div');
     resetSection.className = 'settings-section settings-reset-section';
 
@@ -271,6 +377,7 @@ export function openSettingsModal(
     });
 
     confirmBtn.addEventListener('click', async () => {
+      await pendingSave;
       await resetToDefaults();
       document.documentElement.removeAttribute('data-theme');
       if (onResetDefaults) {
@@ -318,7 +425,7 @@ export function openSettingsModal(
 
     // --- WCAG AA Focus Trap & Keyboard Navigation ---
     const focusableSelector =
-      'input:not([disabled]):not([type="hidden"]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      'input:not(:disabled):not([type="hidden"]), textarea:not(:disabled), button:not(:disabled), [tabindex]:not([tabindex="-1"])';
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -352,9 +459,6 @@ export function openSettingsModal(
     doneBtn.focus();
   };
 
-  if (initialSettings) {
-    renderModal(initialSettings);
-  } else {
-    getSettings().then((settings) => renderModal(settings));
-  }
+  Promise.all([initialSettings ?? getSettings(), getContainers()])
+    .then(([settings, containers]) => renderModal(settings, containers));
 }

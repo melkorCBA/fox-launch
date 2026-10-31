@@ -178,6 +178,8 @@
 .settings-modal {
   width: 100%;
   max-width: 460px;
+  max-height: calc(100dvh - 2 * var(--space-4));
+  overflow-y: auto;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -220,6 +222,39 @@
 
 .radio-option input[type="radio"] {
   cursor: pointer;
+}
+
+.settings-container-filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.settings-container-filters:disabled {
+  opacity: 0.6;
+}
+
+.settings-container-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.settings-container-list .radio-option {
+  overflow-wrap: anywhere;
+}
+
+.container-name-patterns {
+  height: auto;
+  min-height: 76px;
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
 }
 
 /* Onboarding Walkthrough Specifics */

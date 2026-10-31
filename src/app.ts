@@ -20,6 +20,7 @@ import { openShortcutModal } from './components/modal';
 import { openSettingsModal } from './components/settingsModal';
 import { openOnboardingOverlay } from './components/onboarding';
 import { showUndoToast } from './components/toast';
+import { isContainerVisible } from './utils/containerVisibility';
 
 let searchController: SearchController | null = null;
 let appSettings: FoxLaunchSettings;
@@ -81,6 +82,10 @@ export async function refreshSwimlane(cookieStoreId: string): Promise<void> {
   if (!container) return;
 
   const existingEl = document.getElementById(`swimlane-${cookieStoreId}`);
+  if (!isContainerVisible(container, settings.containerVisibility)) {
+    existingEl?.remove();
+    return;
+  }
   const items = shortcutsMap[cookieStoreId] || [];
 
   const callbacks: SwimlaneCallbacks = {
@@ -165,6 +170,26 @@ async function handleReorderShortcuts(cookieStoreId: string, _reordered: Shortcu
   await refreshSwimlane(cookieStoreId);
 }
 
+function mountSwimlanes(shortcutsMap: Record<string, ShortcutItem[]>): void {
+  const swimlanesContainer = document.getElementById('swimlanes-container');
+  if (!swimlanesContainer) return;
+  const fragment = document.createDocumentFragment();
+  const callbacks: SwimlaneCallbacks = {
+    onAddShortcut: (cid) => handleOpenAddModal(cid),
+    onEditShortcut: (item) => handleOpenEditModal(item),
+    onDeleteShortcut: (item) => handleDeleteShortcut(item),
+    onReorderShortcuts: (cid, reordered) => handleReorderShortcuts(cid, reordered),
+  };
+
+  discoveredContainers.forEach((container) => {
+    if (!isContainerVisible(container, appSettings.containerVisibility)) return;
+    const shortcuts = shortcutsMap[container.cookieStoreId] || [];
+    fragment.appendChild(renderSwimlane(container, shortcuts, appSettings, callbacks));
+  });
+  swimlanesContainer.replaceChildren(fragment);
+  searchController?.init();
+}
+
 export async function initializeApp(): Promise<void> {
   const startTime = performance.now();
   try {
@@ -185,26 +210,7 @@ export async function initializeApp(): Promise<void> {
   applyTheme(settings.theme);
 
   // Mount swimlanes
-  const swimlanesContainer = document.getElementById('swimlanes-container');
-  if (swimlanesContainer) {
-    swimlanesContainer.replaceChildren();
-    const fragment = document.createDocumentFragment();
-
-    const callbacks: SwimlaneCallbacks = {
-      onAddShortcut: (cid) => handleOpenAddModal(cid),
-      onEditShortcut: (item) => handleOpenEditModal(item),
-      onDeleteShortcut: (item) => handleDeleteShortcut(item),
-      onReorderShortcuts: (cid, reordered) => handleReorderShortcuts(cid, reordered),
-    };
-
-    containers.forEach((container) => {
-      const shortcuts = shortcutsMap[container.cookieStoreId] || [];
-      const swimlaneEl = renderSwimlane(container, shortcuts, appSettings, callbacks);
-      fragment.appendChild(swimlaneEl);
-    });
-
-    swimlanesContainer.appendChild(fragment);
-  }
+  mountSwimlanes(shortcutsMap);
 
   // Initialize Search Controller
   searchController = initSearch();
@@ -213,8 +219,16 @@ export async function initializeApp(): Promise<void> {
   const settingsBtn = document.getElementById('settings-btn') as HTMLButtonElement | null;
   if (settingsBtn) {
     settingsBtn.addEventListener('click', () => {
-      openSettingsModal(settingsBtn, async () => {
-        await renderApp();
+      openSettingsModal({
+        triggerElement: settingsBtn,
+        onSettingsChanged: async (updated) => {
+          appSettings = updated;
+          applyTheme(updated.theme);
+          mountSwimlanes(await getShortcuts());
+        },
+        onResetDefaults: async () => {
+          await renderApp();
+        },
       });
     });
   }

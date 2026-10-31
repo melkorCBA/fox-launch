@@ -42,6 +42,12 @@ export type TabBehavior = 'close' | 'keep';
  */
 export type ThemeMode = 'auto' | 'light' | 'dark';
 
+export interface ContainerVisibility {
+  mode: 'all' | 'only' | 'hide';
+  cookieStoreIds: string[];
+  namePatterns: string[];
+}
+
 /**
  * User preferences and persistent state.
  */
@@ -56,6 +62,8 @@ export interface FoxLaunchSettings {
   firstRunDismissed: boolean;
   /** Map of container cookieStoreId to collapse state (true = collapsed, false = expanded) */
   swimlaneCollapse: Record<string, boolean>;
+  /** Local visibility filters for native container swimlanes */
+  containerVisibility: ContainerVisibility;
 }
 
 /**

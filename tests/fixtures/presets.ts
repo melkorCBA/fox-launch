@@ -81,6 +81,7 @@ export const DEFAULT_SETTINGS: FoxLaunchSettings = {
   tabBehavior: 'close',
   theme: 'auto',
   firstRunDismissed: true, // Default to true in tests unless explicitly testing onboarding
+  containerVisibility: { mode: 'all', cookieStoreIds: [], namePatterns: [] },
   swimlaneCollapse: {
     'firefox-default': true, // Collapsed by default per pilot-plan §D6
   },
@@ -91,6 +92,7 @@ export const ONBOARDING_SETTINGS: FoxLaunchSettings = {
   tabBehavior: 'close',
   theme: 'auto',
   firstRunDismissed: false, // Triggers onboarding walkthrough
+  containerVisibility: { mode: 'all', cookieStoreIds: [], namePatterns: [] },
   swimlaneCollapse: {
     'firefox-default': true,
   },

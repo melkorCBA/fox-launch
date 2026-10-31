@@ -17,6 +17,11 @@ export const DEFAULT_SETTINGS: FoxLaunchSettings = {
   tabBehavior: 'keep',
   theme: 'auto',
   firstRunDismissed: false,
+  containerVisibility: {
+    mode: 'all',
+    cookieStoreIds: [],
+    namePatterns: [],
+  },
   swimlaneCollapse: {
     'firefox-default': true, // Collapsed by default per R1 & Pilot Plan §D6
   },
@@ -215,6 +220,14 @@ export async function getSettings(): Promise<FoxLaunchSettings> {
       tabBehavior: raw.tabBehavior ?? DEFAULT_SETTINGS.tabBehavior,
       theme: raw.theme ?? DEFAULT_SETTINGS.theme,
       firstRunDismissed: raw.firstRunDismissed ?? DEFAULT_SETTINGS.firstRunDismissed,
+      containerVisibility: {
+        mode: raw.containerVisibility?.mode === 'only' || raw.containerVisibility?.mode === 'hide'
+          ? raw.containerVisibility.mode : 'all',
+        cookieStoreIds: Array.isArray(raw.containerVisibility?.cookieStoreIds)
+          ? raw.containerVisibility.cookieStoreIds.filter((id) => typeof id === 'string') : [],
+        namePatterns: Array.isArray(raw.containerVisibility?.namePatterns)
+          ? raw.containerVisibility.namePatterns.filter((pattern) => typeof pattern === 'string') : [],
+      },
       swimlaneCollapse: {
         ...DEFAULT_SETTINGS.swimlaneCollapse,
         ...(raw.swimlaneCollapse || {}),
