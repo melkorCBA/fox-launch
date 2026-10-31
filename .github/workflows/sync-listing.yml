@@ -23,6 +23,8 @@ jobs:
     name: Sync Store Listing to Mozilla Add-ons
     runs-on: ubuntu-latest
     environment: production-amo
+    env:
+      npm_config_manage_package_manager_versions: 'false'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,6 +33,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Install pnpm
+        run: npm install --global pnpm@10.34.5
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Firefox
+        run: pnpm exec playwright install --with-deps firefox
+
+      - name: Refresh AMO screenshots
+        run: node scripts/capture-amo-screenshots.mjs
 
       - name: Sync AMO Store Listing
         env:

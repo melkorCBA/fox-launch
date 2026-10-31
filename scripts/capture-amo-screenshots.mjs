@@ -2,6 +2,7 @@ import { firefox } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WINDOWS_FIREFOX_CACHE = 'C:\\Users\\dadcb\\AppData\\Local\\ms-playwright\\firefox-1555\\firefox\\firefox.exe';
@@ -9,6 +10,14 @@ const executablePath = process.env.FIREFOX_BIN ||
   (process.platform === 'win32' && fs.existsSync(WINDOWS_FIREFOX_CACHE) ? WINDOWS_FIREFOX_CACHE : undefined);
 
 async function capture() {
+  const result = spawnSync(process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm', [
+    'exec', 'playwright', 'test', 'tests/e2e/brand-guide-compliance.spec.ts',
+    '--grep', 'Capture AMO promotional screenshots',
+  ], { cwd: path.resolve(__dirname, '..'), stdio: 'inherit' });
+  if (result.error || result.status !== 0) {
+    throw new Error(`AMO screenshot capture failed: ${result.error?.message || `exit status ${result.status}`}`);
+  }
+
   // Render Hero Banner SVG to PNG
   const heroSvgPath = path.resolve(__dirname, '../metadata/amo/assets/foxlaunch-hero-1280x640.svg');
   if (fs.existsSync(heroSvgPath)) {
