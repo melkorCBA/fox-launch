@@ -45,15 +45,6 @@ body {
   flex: 1;
 }
 
-/* Footer Watermark */
-.app-footer {
-  margin-top: auto;
-  padding-top: var(--space-2);
-  color: var(--text-muted);
-  font-size: var(--text-xs);
-  text-align: center;
-}
-
 /* Header & Brand */
 .app-header {
   display: flex;

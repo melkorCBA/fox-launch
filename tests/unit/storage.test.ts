@@ -95,10 +95,8 @@ test.describe('Storage Service (browser.storage.local)', () => {
     expect(settings.version).toBe(1);
     expect(settings.tabBehavior).toBe('keep');
     expect(settings.theme).toBe('auto');
-    expect(settings.cardSize).toBe('medium');
     expect(settings.firstRunDismissed).toBe(false);
     expect(settings.swimlaneCollapse['firefox-default']).toBe(true);
-    expect(settings.swimlaneOrder).toEqual([]);
   });
 
   test('saveSettings merges partial settings properly and preserves other fields', async () => {
@@ -108,37 +106,6 @@ test.describe('Storage Service (browser.storage.local)', () => {
     expect(updated.theme).toBe('dark');
     expect(updated.firstRunDismissed).toBe(false); // Preserved
     expect(updated.swimlaneCollapse['firefox-default']).toBe(true); // Preserved
-  });
-
-  test('getSettings defaults missing or invalid card sizes to medium', async () => {
-    for (const cardSize of [undefined, null, 'invalid']) {
-      mockState.store[STORAGE_KEYS.SETTINGS] = { theme: 'dark', cardSize };
-      const settings = await getSettings();
-      expect(settings.cardSize).toBe('medium');
-      expect(settings.theme).toBe('dark');
-    }
-  });
-
-  test('saveSettings persists each card size and preserves it in other updates', async () => {
-    for (const cardSize of ['small', 'medium', 'large'] as const) {
-      await saveSettings({ cardSize });
-      await saveSettings({ theme: 'dark', swimlaneCollapse: { 'firefox-container-1': true } });
-      const settings = await getSettings();
-      expect(settings.cardSize).toBe(cardSize);
-      expect(settings.theme).toBe('dark');
-      expect(settings.swimlaneCollapse['firefox-container-1']).toBe(true);
-    }
-  });
-
-  test('saveSettings serializes concurrent updates without discarding cardSize or theme', async () => {
-    await Promise.all([
-      saveSettings({ cardSize: 'small' }),
-      saveSettings({ theme: 'dark' }),
-    ]);
-
-    const finalSettings = await getSettings();
-    expect(finalSettings.cardSize).toBe('small');
-    expect(finalSettings.theme).toBe('dark');
   });
 
   test('saveSettings merges swimlaneCollapse dictionary without overwriting other containers', async () => {
@@ -158,17 +125,21 @@ test.describe('Storage Service (browser.storage.local)', () => {
     expect(s2.swimlaneCollapse['firefox-container-2']).toBe(true);
   });
 
-  test('saveSettings persists swimlane order alongside other settings', async () => {
-    await saveSettings({ swimlaneOrder: ['firefox-container-2', 'firefox-container-1'] });
-    expect((await getSettings()).swimlaneOrder).toEqual([
-      'firefox-container-2',
-      'firefox-container-1',
+  test('saveSettings serializes concurrent updates without dropping fields', async () => {
+    await Promise.all([
+      saveSettings({ theme: 'dark' }),
+      saveSettings({ tabBehavior: 'close' }),
+      saveSettings({
+        containerVisibility: { mode: 'only', cookieStoreIds: ['firefox-container-1'], namePatterns: ['Work*'] },
+      }),
     ]);
 
-    await saveSettings({ theme: 'dark' });
-    const settings = await getSettings();
-    expect(settings.theme).toBe('dark');
-    expect(settings.swimlaneOrder).toEqual(['firefox-container-2', 'firefox-container-1']);
+    const finalSettings = await getSettings();
+    expect(finalSettings.theme).toBe('dark');
+    expect(finalSettings.tabBehavior).toBe('close');
+    expect(finalSettings.containerVisibility.mode).toBe('only');
+    expect(finalSettings.containerVisibility.cookieStoreIds).toEqual(['firefox-container-1']);
+    expect(finalSettings.containerVisibility.namePatterns).toEqual(['Work*']);
   });
 
   test('addShortcut generates id, timestamp, order, and domain', async () => {
@@ -282,7 +253,7 @@ test.describe('Storage Service (browser.storage.local)', () => {
 
   test('resetToDefaults clears shortcuts and resets settings preserving firstRunDismissed', async () => {
     await addShortcut('firefox-container-1', { title: 'Test', url: 'https://test.com' });
-    await saveSettings({ tabBehavior: 'close', theme: 'dark', cardSize: 'large' });
+    await saveSettings({ tabBehavior: 'close', theme: 'dark' });
 
     await resetToDefaults();
 
@@ -292,7 +263,6 @@ test.describe('Storage Service (browser.storage.local)', () => {
     const settings = await getSettings();
     expect(settings.tabBehavior).toBe('keep');
     expect(settings.theme).toBe('auto');
-    expect(settings.cardSize).toBe('medium');
     expect(settings.firstRunDismissed).toBe(true);
   });
 
