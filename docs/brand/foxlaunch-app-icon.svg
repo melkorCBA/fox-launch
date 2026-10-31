@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="appIconGrad" x1="20" y1="20" x2="108" y2="108" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFB800"/>
+      <stop offset="45%" stop-color="#FF7139"/>
+      <stop offset="100%" stop-color="#C6007A"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Squircle -->
+  <rect width="128" height="128" rx="30" fill="#2B2A33"/>
+  <rect x="1.5" y="1.5" width="125" height="125" rx="28.5" stroke="rgba(255,255,255,0.12)" stroke-width="3"/>
+  <!-- Orbital Multi-Account Container Color Accents -->
+  <circle cx="64" cy="64" r="50" stroke="#375AE6" stroke-width="2.5" stroke-dasharray="10 26" opacity="0.6"/>
+  <circle cx="64" cy="64" r="42" stroke="#00C975" stroke-width="2" stroke-dasharray="8 30" opacity="0.5"/>
+  <!-- Centered Curled Ensō Fox -->
+  <g transform="translate(14, 14)">
+    <path d="M70 34C78 44 78 61 68 72C56 84 35 83 24 70C14 57 17 37 31 26C43 17 58 20 65 29" stroke="url(#appIconGrad)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M60 28L71 20L69 32" stroke="#FFB800" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="43" cy="46" r="3.5" fill="#FFFFFF"/>
+    <circle cx="76" cy="26" r="3" fill="#FFD43B"/>
+  </g>
+</svg>
