@@ -16,6 +16,7 @@ export const DEFAULT_SETTINGS: FoxLaunchSettings = {
   version: 1,
   tabBehavior: 'keep',
   theme: 'auto',
+  cardSize: 'medium',
   firstRunDismissed: false,
   swimlaneCollapse: {
     'firefox-default': true, // Collapsed by default per R1 & Pilot Plan §D6
@@ -214,6 +215,8 @@ export async function getSettings(): Promise<FoxLaunchSettings> {
       version: raw.version ?? DEFAULT_SETTINGS.version,
       tabBehavior: raw.tabBehavior ?? DEFAULT_SETTINGS.tabBehavior,
       theme: raw.theme ?? DEFAULT_SETTINGS.theme,
+      cardSize: raw.cardSize === 'small' || raw.cardSize === 'large'
+        ? raw.cardSize : DEFAULT_SETTINGS.cardSize,
       firstRunDismissed: raw.firstRunDismissed ?? DEFAULT_SETTINGS.firstRunDismissed,
       swimlaneCollapse: {
         ...DEFAULT_SETTINGS.swimlaneCollapse,
