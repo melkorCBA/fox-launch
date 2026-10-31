@@ -186,6 +186,17 @@ async function request(endpoint, options, operation) {
     throw new Error(`${operation}: ${err.message}`);
   }
   const responseBody = await response.text();
+  if (response.status === 429) {
+    let waitSec = 60;
+    try {
+      const parsed = JSON.parse(responseBody);
+      const m = parsed.detail?.match(/(\d+)\s+seconds/);
+      if (m) waitSec = parseInt(m[1], 10) + 1;
+    } catch {}
+    console.log(`⏳ Rate limited (429). Waiting ${waitSec}s before retrying...`);
+    await new Promise((resolve) => setTimeout(resolve, waitSec * 1000));
+    return request(endpoint, options, operation);
+  }
   if (!response.ok) {
     throw new Error(`${operation}: AMO API returned error ${response.status} (${response.statusText}):\n${responseBody}`);
   }
