@@ -220,7 +220,7 @@
   width: var(--card-avatar-size);
   height: var(--card-avatar-size);
   border-radius: var(--radius-sm);
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .shortcut-info {

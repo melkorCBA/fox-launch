@@ -10,6 +10,7 @@ import { extractDomain } from '../utils/validation';
 export const STORAGE_KEYS = {
   SHORTCUTS: 'foxlaunch_shortcuts',
   SETTINGS: 'foxlaunch_settings',
+  FAVICONS: 'foxlaunch_favicons',
 } as const;
 
 export const DEFAULT_SETTINGS: FoxLaunchSettings = {
@@ -40,13 +41,19 @@ export async function getShortcuts(): Promise<Record<string, ShortcutItem[]>> {
       return {};
     }
 
-    const result = await browser.storage.local.get(STORAGE_KEYS.SHORTCUTS);
+    const result = await browser.storage.local.get([STORAGE_KEYS.SHORTCUTS, STORAGE_KEYS.FAVICONS]);
     const shortcuts = (result[STORAGE_KEYS.SHORTCUTS] as Record<string, ShortcutItem[]>) || {};
+    const favicons = (result[STORAGE_KEYS.FAVICONS] as Record<string, string>) || {};
 
     const sorted: Record<string, ShortcutItem[]> = {};
     for (const [cookieStoreId, items] of Object.entries(shortcuts)) {
       if (Array.isArray(items)) {
-        sorted[cookieStoreId] = [...items].sort((a, b) => a.order - b.order);
+        sorted[cookieStoreId] = [...items]
+          .sort((a, b) => a.order - b.order)
+          .map((item) => ({
+            ...item,
+            favIconUrl: favicons[item.id] || item.favIconUrl,
+          }));
       } else {
         sorted[cookieStoreId] = [];
       }
@@ -92,7 +99,7 @@ export async function saveShortcuts(
  */
 export async function addShortcut(
   cookieStoreId: string,
-  itemInput: { title: string; url: string; domain?: string; id?: string; createdAt?: number }
+  itemInput: { title: string; url: string; domain?: string; id?: string; createdAt?: number; favIconUrl?: string }
 ): Promise<ShortcutItem> {
   const all = await getShortcuts();
   const currentItems = all[cookieStoreId] ? [...all[cookieStoreId]] : [];
@@ -108,6 +115,7 @@ export async function addShortcut(
     domain,
     createdAt: itemInput.createdAt || Date.now(),
     order: currentItems.length,
+    favIconUrl: itemInput.favIconUrl,
   };
 
   currentItems.push(newShortcut);
@@ -165,6 +173,81 @@ export async function updateShortcut(
  * Deletes a shortcut from a container by ID.
  * Re-indexes remaining items' order and returns the deleted item (enables undo toast).
  */
+
+let faviconSaveQueue: Promise<unknown> = Promise.resolve();
+
+/**
+ * Updates the cached favicon for a specific shortcut ID.
+ * Stores favicons under a dedicated storage key to eliminate lost updates with shortcut mutations.
+ * Validates expectedUrl to discard stale favicons if shortcut was edited while tab loaded.
+ */
+export async function updateShortcutFavicon(
+  shortcutId: string,
+  favIconUrl: string,
+  expectedUrl?: string
+): Promise<boolean> {
+  const executeSave = async (): Promise<boolean> => {
+    try {
+      if (expectedUrl) {
+        const all = await getShortcuts();
+        let matches = false;
+        for (const items of Object.values(all)) {
+          const sc = items.find((item) => item.id === shortcutId);
+          if (sc) {
+            if (sc.url === expectedUrl) {
+              matches = true;
+            }
+            break;
+          }
+        }
+        if (!matches) {
+          return false;
+        }
+      }
+
+      if (typeof browser !== 'undefined' && browser.storage?.local) {
+        const res = await browser.storage.local.get(STORAGE_KEYS.FAVICONS);
+        const favicons = (res[STORAGE_KEYS.FAVICONS] as Record<string, string>) || {};
+        favicons[shortcutId] = favIconUrl;
+        await browser.storage.local.set({ [STORAGE_KEYS.FAVICONS]: favicons });
+      }
+
+      return true;
+    } catch (error) {
+      console.error('[FoxLaunch] Error updating favicon:', error);
+      return false;
+    }
+  };
+
+  const nextSave = faviconSaveQueue.then(executeSave, executeSave);
+  faviconSaveQueue = nextSave.catch(() => false);
+  return nextSave;
+}
+
+/**
+ * Removes the cached favicon for a specific shortcut ID.
+ */
+export async function deleteShortcutFavicon(shortcutId: string): Promise<void> {
+  const executeDelete = async (): Promise<void> => {
+    try {
+      if (typeof browser !== 'undefined' && browser.storage?.local) {
+        const res = await browser.storage.local.get(STORAGE_KEYS.FAVICONS);
+        const favicons = (res[STORAGE_KEYS.FAVICONS] as Record<string, string>) || {};
+        if (favicons[shortcutId]) {
+          delete favicons[shortcutId];
+          await browser.storage.local.set({ [STORAGE_KEYS.FAVICONS]: favicons });
+        }
+      }
+    } catch (error) {
+      console.error('[FoxLaunch] Error deleting shortcut favicon:', error);
+    }
+  };
+
+  const nextDelete = faviconSaveQueue.then(executeDelete, executeDelete);
+  faviconSaveQueue = nextDelete.catch(() => {});
+  return nextDelete;
+}
+
 export async function deleteShortcut(
   cookieStoreId: string,
   id: string

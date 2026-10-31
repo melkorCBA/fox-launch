@@ -141,6 +141,10 @@ export function buildMockWebExtensionScript(options: MockHarnessInitOptions = {}
   const containerCreatedListeners = new Set();
   const containerRemovedListeners = new Set();
   const containerUpdatedListeners = new Set();
+  const tabUpdatedListeners = new Set();
+  const tabRemovedListeners = new Set();
+  const runtimeMessageListeners = new Set();
+  const openTabsList = [];
 
   function createListenerContainer(set) {
     return {
@@ -316,6 +320,11 @@ export function buildMockWebExtensionScript(options: MockHarnessInitOptions = {}
       async update(tabId, updateProps) {
         return { id: tabId, ...updateProps };
       },
+      async query(queryInfo) {
+        return [...openTabsList];
+      },
+      onUpdated: createListenerContainer(tabUpdatedListeners),
+      onRemoved: createListenerContainer(tabRemovedListeners),
     },
 
     runtime: {
@@ -327,6 +336,12 @@ export function buildMockWebExtensionScript(options: MockHarnessInitOptions = {}
         return path.startsWith('/') ? path : '/' + path;
       },
       lastError: null,
+      onMessage: createListenerContainer(runtimeMessageListeners),
+      async sendMessage(msg) {
+        runtimeMessageListeners.forEach(fn => {
+          try { fn(msg); } catch (e) { console.error(e); }
+        });
+      },
     },
 
     i18n: {
@@ -362,6 +377,20 @@ export function buildMockWebExtensionScript(options: MockHarnessInitOptions = {}
     },
     setStorage(data) {
       saveRawStorage(data);
+    },
+    setOpenTabs(tabs) {
+      openTabsList.length = 0;
+      openTabsList.push(...tabs);
+    },
+    emitTabUpdated(tabId, changeInfo, tab) {
+      tabUpdatedListeners.forEach(fn => {
+        try { fn(tabId, changeInfo, tab || { id: tabId, ...changeInfo }); } catch (e) { console.error(e); }
+      });
+    },
+    emitTabRemoved(tabId) {
+      tabRemovedListeners.forEach(fn => {
+        try { fn(tabId); } catch (e) { console.error(e); }
+      });
     },
     reset(newSeed) {
       const seed = newSeed || defaultSeed;

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dedicated agent skill `/manage-amo-screenshots` to evaluate feature commit sets for visual impact and maintain the AMO 5-screenshot limit.
 - Integration of background screenshot manager agent into `/create-release` workflow.
 - AMO visual asset constraints documented in `.agents/rules/amo-listing.md`.
+- Automatic site favicon capture on shortcut dispatch and open-tab pre-population with graceful procedural avatar fallback (#15).
 - Conventional Commits v1.0.0 specification enforcement across agentic and collaborative workflows.
 - Automated PR title validation workflow (`.github/workflows/semantic-pr.yml`) using `action-semantic-pull-request`.
 - Project agent rule for Conventional Commits (`.agents/rules/conventional-commits.md`).
