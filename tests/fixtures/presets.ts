@@ -80,24 +80,22 @@ export const DEFAULT_SETTINGS: FoxLaunchSettings = {
   version: 1,
   tabBehavior: 'close',
   theme: 'auto',
-  cardSize: 'medium',
   firstRunDismissed: true, // Default to true in tests unless explicitly testing onboarding
+  containerVisibility: { mode: 'all', cookieStoreIds: [], namePatterns: [] },
   swimlaneCollapse: {
     'firefox-default': true, // Collapsed by default per pilot-plan §D6
   },
-  swimlaneOrder: [],
 };
 
 export const ONBOARDING_SETTINGS: FoxLaunchSettings = {
   version: 1,
   tabBehavior: 'close',
   theme: 'auto',
-  cardSize: 'medium',
   firstRunDismissed: false, // Triggers onboarding walkthrough
+  containerVisibility: { mode: 'all', cookieStoreIds: [], namePatterns: [] },
   swimlaneCollapse: {
     'firefox-default': true,
   },
-  swimlaneOrder: [],
 };
 
 export function makeShortcut(
