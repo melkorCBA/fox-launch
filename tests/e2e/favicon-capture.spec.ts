@@ -201,13 +201,11 @@ test.describe('Shortcut Favicon Capture & Display (Issue #15)', () => {
       return updatedCard.locator('[data-testid="shortcut-avatar"]').getAttribute('src');
     }).toBe(capturedFavicon);
 
-    // Verify storage was updated with captured favicon
-    const updatedInStorage = await page.evaluate(async (cid) => {
+    // Verify storage was updated with captured favicon under dedicated key
+    const capturedInStorage = await page.evaluate(async (shortcutId) => {
       const storage = window.__FOXLAUNCH_TEST_HARNESS__.getStorage();
-      return storage.foxlaunch_shortcuts?.[cid] || [];
-    }, testCookieStoreId);
-
-    const saved = updatedInStorage.find((s: ShortcutItem) => s.id === targetShortcut.id);
-    expect(saved.favIconUrl).toBe(capturedFavicon);
+      return storage.foxlaunch_favicons?.[shortcutId];
+    }, targetShortcut.id);
+    expect(capturedInStorage).toBe(capturedFavicon);
   });
 });

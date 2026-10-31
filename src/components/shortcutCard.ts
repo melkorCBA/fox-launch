@@ -66,7 +66,8 @@ export function renderShortcutCard(
 
   const fallbackSvg = generateAvatarSvg(shortcut.domain, containerColorCode);
 
-  if (shortcut.favIconUrl) {
+  // Only render locally available data URLs (data:image/...) to prevent remote tracking or requests
+  if (shortcut.favIconUrl && shortcut.favIconUrl.startsWith('data:image/')) {
     avatarImg.src = shortcut.favIconUrl;
     avatarImg.onerror = () => {
       avatarImg.src = fallbackSvg;

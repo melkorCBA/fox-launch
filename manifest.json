@@ -20,7 +20,8 @@
   "background": {
     "scripts": [
       "assets/background.js"
-    ]
+    ],
+    "type": "module"
   },
   "permissions": [
     "contextualIdentities",

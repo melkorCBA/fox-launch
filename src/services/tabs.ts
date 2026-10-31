@@ -44,6 +44,7 @@ export async function dispatchShortcut(
     const shortcutId = options.shortcutId;
     const tabId = createdTab.id;
 
+    const targetUrl = url;
     // 1. Notify background worker for survival across launcher tab closure
     if (typeof browser !== 'undefined' && browser.runtime?.sendMessage) {
       try {
@@ -51,6 +52,7 @@ export async function dispatchShortcut(
           type: 'WATCH_FAVICON',
           shortcutId,
           tabId,
+          targetUrl,
         }).catch(() => {
           // Background script optional if not available
         });
@@ -62,7 +64,7 @@ export async function dispatchShortcut(
     // 2. Also attach local one-shot watcher
     createOneShotFaviconWatcher(tabId, async (favIconUrl) => {
       try {
-        await updateShortcutFavicon(shortcutId, favIconUrl);
+        await updateShortcutFavicon(shortcutId, favIconUrl, targetUrl);
       } catch (err) {
         console.error('[FoxLaunch] Error saving favicon from local watcher:', err);
       }

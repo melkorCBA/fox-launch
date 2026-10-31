@@ -13,6 +13,7 @@ export interface WatchFaviconMessage {
   type: 'WATCH_FAVICON';
   shortcutId: string;
   tabId: number;
+  targetUrl?: string;
 }
 
 if (typeof browser !== 'undefined' && browser.runtime?.onMessage) {
@@ -22,11 +23,11 @@ if (typeof browser !== 'undefined' && browser.runtime?.onMessage) {
       typeof message === 'object' &&
       (message as WatchFaviconMessage).type === 'WATCH_FAVICON'
     ) {
-      const { shortcutId, tabId } = message as WatchFaviconMessage;
+      const { shortcutId, tabId, targetUrl } = message as WatchFaviconMessage;
       if (shortcutId && typeof tabId === 'number') {
         createOneShotFaviconWatcher(tabId, async (favIconUrl: string) => {
           try {
-            await updateShortcutFavicon(shortcutId, favIconUrl);
+            await updateShortcutFavicon(shortcutId, favIconUrl, targetUrl);
           } catch (err) {
             console.error('[FoxLaunch Background] Error persisting captured favicon:', err);
           }

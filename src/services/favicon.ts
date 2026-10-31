@@ -8,6 +8,43 @@
 import { extractDomain } from '../utils/validation';
 
 /**
+ * Safely converts an icon URL into local Base64 image data URL.
+ * Rejects remote URLs if image bytes cannot be retrieved locally,
+ * guaranteeing zero remote image requests on launcher render.
+ */
+export async function toLocalFaviconDataUrl(iconUrl?: string): Promise<string | undefined> {
+  if (!iconUrl) return undefined;
+  if (iconUrl.startsWith('data:image/')) return iconUrl;
+
+  if (iconUrl.startsWith('http://') || iconUrl.startsWith('https://')) {
+    try {
+      const res = await fetch(iconUrl, { cache: 'force-cache' });
+      if (!res.ok) return undefined;
+      const blob = await res.blob();
+      if (!blob.type.startsWith('image/')) return undefined;
+
+      return await new Promise<string | undefined>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result;
+          if (typeof result === 'string' && result.startsWith('data:image/')) {
+            resolve(result);
+          } else {
+            resolve(undefined);
+          }
+        };
+        reader.onerror = () => resolve(undefined);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return undefined;
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Determines whether candidateUrl matches the shortcut targetUrl.
  * Matches exact URL, matching origin/hostname, or matching protocol paths.
  */
@@ -50,7 +87,8 @@ export async function findFaviconFromOpenTabs(targetUrl: string): Promise<string
     const tabs = await browser.tabs.query({});
     for (const tab of tabs) {
       if (tab.favIconUrl && tab.url && isMatchingTarget(targetUrl, tab.url)) {
-        return tab.favIconUrl;
+        const localDataUrl = await toLocalFaviconDataUrl(tab.favIconUrl);
+        if (localDataUrl) return localDataUrl;
       }
     }
   } catch (error) {
@@ -98,18 +136,21 @@ export function createOneShotFaviconWatcher(
     }
   };
 
-  const onUpdated = (
+  const onUpdated = async (
     tabId: number,
     changeInfo: browser.tabs._OnUpdatedChangeInfo,
     tab: browser.tabs.Tab
   ) => {
     if (tabId !== targetTabId) return;
 
-    const iconUrl = changeInfo.favIconUrl || (tab.status === 'complete' ? tab.favIconUrl : undefined);
-    if (iconUrl) {
+    const rawIconUrl = changeInfo.favIconUrl || (tab.status === 'complete' ? tab.favIconUrl : undefined);
+    if (rawIconUrl) {
       cleanup();
       try {
-        onCaptured(iconUrl);
+        const localDataUrl = await toLocalFaviconDataUrl(rawIconUrl);
+        if (localDataUrl) {
+          onCaptured(localDataUrl);
+        }
       } catch (err) {
         console.error('[FoxLaunch] Error in onCaptured callback:', err);
       }
