@@ -20,6 +20,7 @@ export const DEFAULT_SETTINGS: FoxLaunchSettings = {
   swimlaneCollapse: {
     'firefox-default': true, // Collapsed by default per R1 & Pilot Plan §D6
   },
+  swimlaneOrder: [],
 };
 
 /**
@@ -219,6 +220,9 @@ export async function getSettings(): Promise<FoxLaunchSettings> {
         ...DEFAULT_SETTINGS.swimlaneCollapse,
         ...(raw.swimlaneCollapse || {}),
       },
+      swimlaneOrder: Array.isArray(raw.swimlaneOrder)
+        ? [...new Set(raw.swimlaneOrder.filter((id): id is string => typeof id === 'string'))]
+        : [...DEFAULT_SETTINGS.swimlaneOrder],
     };
   } catch (error) {
     console.error('[FoxLaunch] Error reading settings:', error);
