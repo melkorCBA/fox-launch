@@ -86,9 +86,57 @@ if (config.support_url) {
   payload.support_url = { 'en-US': config.support_url };
 }
 
+function isValidPng(buffer) {
+  const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  if (!Buffer.isBuffer(buffer) || buffer.length < 45) return false;
+  if (!buffer.subarray(0, 8).equals(PNG_SIGNATURE)) return false;
+
+  const ihdrLength = buffer.readUInt32BE(8);
+  if (ihdrLength !== 13) return false;
+  if (buffer.subarray(12, 16).toString('ascii') !== 'IHDR') return false;
+
+  const width = buffer.readUInt32BE(16);
+  const height = buffer.readUInt32BE(20);
+  if (width === 0 || height === 0) return false;
+
+  const iendStart = buffer.length - 12;
+  if (iendStart < 33) return false;
+  const iendLength = buffer.readUInt32BE(iendStart);
+  if (iendLength !== 0) return false;
+  if (buffer.subarray(iendStart + 4, iendStart + 8).toString('ascii') !== 'IEND') return false;
+
+  return true;
+}
+
+const screenshots = [
+  'foxlaunch-dark-2400x1800.png',
+  'foxlaunch-light-2400x1800.png',
+].map((preferredName) => {
+  const theme = preferredName.includes('dark') ? 'dark' : 'light';
+  const legacyName = `foxlaunch-${theme}-1280x800.png`;
+  let filename = preferredName;
+  let screenshotPath = path.join(metadataDir, 'screenshots', filename);
+  if (!fs.existsSync(screenshotPath) && fs.existsSync(path.join(metadataDir, 'screenshots', legacyName))) {
+    filename = legacyName;
+    screenshotPath = path.join(metadataDir, 'screenshots', filename);
+  }
+  if (!fs.existsSync(screenshotPath)) {
+    fail(`Missing screenshot: ${screenshotPath}. Prepare and commit the listing screenshots using the release skill before syncing.`);
+  }
+  const image = fs.readFileSync(screenshotPath);
+  if (!isValidPng(image)) {
+    fail(`Invalid PNG screenshot: ${screenshotPath}`);
+  }
+  return { filename, image };
+});
+
 if (isDryRun) {
   console.log('\n🔍 [DRY RUN] Payload to be submitted to AMO:');
   console.log(JSON.stringify(payload, null, 2));
+  console.log('\nScreenshots to replace the AMO previews (dark, then light):');
+  for (const { filename, image } of screenshots) {
+    console.log(`   - ${filename} (${image.length} bytes)`);
+  }
   console.log('\nDry run completed successfully. No changes sent to AMO.');
   process.exit(0);
 }
@@ -120,29 +168,96 @@ function generateAmoJwt(iss, sec) {
   return `${header}.${jwtPayload}.${signature}`;
 }
 
-const jwtToken = generateAmoJwt(issuer, secret);
 const url = `https://addons.mozilla.org/api/v5/addons/addon/${encodeURIComponent(addonId)}/`;
 
-console.log(`\n🚀 Sending PATCH request to ${url}...`);
+async function request(endpoint, options, operation) {
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      ...options,
+      headers: {
+        'Authorization': `JWT ${generateAmoJwt(issuer, secret)}`,
+        ...options.headers,
+      },
+      redirect: 'error',
+      signal: AbortSignal.timeout(60_000),
+    });
+  } catch (err) {
+    throw new Error(`${operation}: ${err.message}`);
+  }
+  const responseBody = await response.text();
+  if (!response.ok) {
+    throw new Error(`${operation}: AMO API returned error ${response.status} (${response.statusText}):\n${responseBody}`);
+  }
+  return responseBody;
+}
 
+async function waitForPreviewProcessing(previewId, timeoutMs = Number(process.env.AMO_PREVIEW_TIMEOUT_MS) || 30_000, pollIntervalMs = 500) {
+  const startTime = Date.now();
+  while (Date.now() - startTime < timeoutMs) {
+    const preview = JSON.parse(
+      await request(`${url}previews/${previewId}/`, { method: 'GET' }, `Check processing for preview ${previewId}`)
+    );
+    if (preview.thumbnail_url && preview.image_url) {
+      return preview;
+    }
+    await new Promise((resolve) => setTimeout(resolve, Math.min(pollIntervalMs, timeoutMs)));
+  }
+  throw new Error(`Upload screenshot preview ${previewId}: AMO image and thumbnail processing timed out.`);
+}
+
+const uploadedIds = [];
+let listingUpdated = false;
 try {
-  const response = await fetch(url, {
+  const addon = JSON.parse(await request(url, { method: 'GET' }, 'Read existing screenshots'));
+  if (!Array.isArray(addon.previews) || addon.previews.some(({ id }) => !Number.isInteger(id) || id <= 0)) {
+    throw new Error('AMO returned an invalid previews list; refusing to replace screenshots.');
+  }
+  for (const [position, { filename, image }] of screenshots.entries()) {
+    console.log(`\n🚀 Uploading screenshot ${filename}...`);
+    const form = new FormData();
+    form.append('image', new Blob([image], { type: 'image/png' }), filename);
+    form.append('position', String(position));
+    const preview = JSON.parse(await request(`${url}previews/`, {
+      method: 'POST',
+      body: form,
+    }, `Upload screenshot ${filename}`));
+    if (!Number.isInteger(preview.id) || preview.id <= 0) {
+      throw new Error(`Upload screenshot ${filename}: AMO did not return a valid preview ID. Check the AMO listing before retrying.`);
+    }
+    uploadedIds.push(preview.id);
+  }
+
+  for (const id of uploadedIds) {
+    console.log(`\n⏳ Verifying preview processing for ${id}...`);
+    await waitForPreviewProcessing(id);
+  }
+
+  console.log(`\n🚀 Sending PATCH request to ${url}...`);
+  await request(url, {
     method: 'PATCH',
     headers: {
-      'Authorization': `JWT ${jwtToken}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
-  });
+  }, 'Update listing metadata');
+  listingUpdated = true;
 
-  const responseBody = await response.text();
-
-  if (!response.ok) {
-    fail(`AMO API returned error ${response.status} (${response.statusText}):\n${responseBody}`);
+  // Keep the old screenshots until every upload, processing, and the metadata update succeeds.
+  for (const { id } of addon.previews) {
+    await request(`${url}previews/${id}/`, { method: 'DELETE' }, `Delete old screenshot ${id}`);
   }
 
-  console.log(`✅ Successfully updated AMO store listing for ${addonId}!`);
-  console.log(`Response status: ${response.status}`);
+  console.log(`✅ Successfully updated AMO store listing and ${screenshots.length} screenshots for ${addonId}!`);
 } catch (err) {
-  fail(`Network error communicating with AMO API: ${err.message}`);
+  if (!listingUpdated) {
+    for (const id of uploadedIds) {
+      try {
+        await request(`${url}previews/${id}/`, { method: 'DELETE' }, `Roll back screenshot ${id}`);
+      } catch (cleanupError) {
+        console.error(`❌ Screenshot rollback failed: ${cleanupError.message}. Check the AMO listing before retrying.`);
+      }
+    }
+  }
+  fail(`Listing/screenshot sync failed: ${err.message}${listingUpdated ? '\nThe listing was updated, but old screenshot cleanup is incomplete. Check the AMO listing before retrying.' : ''}`);
 }

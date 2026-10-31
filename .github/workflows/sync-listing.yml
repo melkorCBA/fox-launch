@@ -15,6 +15,10 @@ on:
         default: false
         required: false
 
+concurrency:
+  group: sync-amo-listing-${{ secrets.AMO_ADDON_ID || 'default' }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
