@@ -232,29 +232,37 @@ export async function getSettings(): Promise<FoxLaunchSettings> {
 /**
  * Persists partial settings updates merged with current settings.
  */
+let settingsSaveQueue: Promise<unknown> = Promise.resolve();
+
 export async function saveSettings(
   partialSettings: Partial<FoxLaunchSettings>
 ): Promise<FoxLaunchSettings> {
-  try {
-    const current = await getSettings();
-    const updated: FoxLaunchSettings = {
-      ...current,
-      ...partialSettings,
-      swimlaneCollapse: {
-        ...current.swimlaneCollapse,
-        ...(partialSettings.swimlaneCollapse || {}),
-      },
-    };
+  const executeSave = async (): Promise<FoxLaunchSettings> => {
+    try {
+      const current = await getSettings();
+      const updated: FoxLaunchSettings = {
+        ...current,
+        ...partialSettings,
+        swimlaneCollapse: {
+          ...current.swimlaneCollapse,
+          ...(partialSettings.swimlaneCollapse || {}),
+        },
+      };
 
-    if (typeof browser !== 'undefined' && browser.storage?.local) {
-      await browser.storage.local.set({ [STORAGE_KEYS.SETTINGS]: updated });
+      if (typeof browser !== 'undefined' && browser.storage?.local) {
+        await browser.storage.local.set({ [STORAGE_KEYS.SETTINGS]: updated });
+      }
+
+      return updated;
+    } catch (error) {
+      console.error('[FoxLaunch] Error saving settings:', error);
+      throw error;
     }
+  };
 
-    return updated;
-  } catch (error) {
-    console.error('[FoxLaunch] Error saving settings:', error);
-    throw error;
-  }
+  const nextSave = settingsSaveQueue.then(executeSave, executeSave);
+  settingsSaveQueue = nextSave.catch(() => {});
+  return nextSave;
 }
 
 /**

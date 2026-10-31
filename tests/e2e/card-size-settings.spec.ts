@@ -67,4 +67,25 @@ test.describe('Card size settings', () => {
     await expect(page.locator('html')).toHaveAttribute('data-card-size', 'medium');
     await expect.poll(async () => (await mockHarness.getStorage()).foxlaunch_settings.cardSize).toBe('medium');
   });
+
+  test('overlapping saves between card size and theme do not discard card size selection', async ({ openFoxLaunch, page, mockHarness }) => {
+    await openFoxLaunch({ settings: { ...DEFAULT_SETTINGS, cardSize: 'medium', theme: 'light' } });
+    await page.locator('#settings-btn').click();
+
+    // Rapidly change card size to small, then change theme to dark without waiting
+    await page.getByRole('radiogroup', { name: 'Card Size' }).getByRole('radio', { name: 'Small', exact: true }).check();
+    await page.getByRole('radiogroup', { name: 'Theme' }).getByRole('radio', { name: 'Dark', exact: true }).check();
+
+    // Verify storage has both updates preserved
+    await expect.poll(async () => {
+      const storage = await mockHarness.getStorage();
+      return { cardSize: storage.foxlaunch_settings.cardSize, theme: storage.foxlaunch_settings.theme };
+    }).toEqual({ cardSize: 'small', theme: 'dark' });
+
+    // Close and reload to ensure persistent state matches
+    await page.getByTestId('modal-done-btn').click();
+    await mockHarness.reloadPage();
+    await expect(page.locator('html')).toHaveAttribute('data-card-size', 'small');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  });
 });

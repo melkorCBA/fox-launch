@@ -129,6 +129,17 @@ test.describe('Storage Service (browser.storage.local)', () => {
     }
   });
 
+  test('saveSettings serializes concurrent updates without discarding cardSize or theme', async () => {
+    await Promise.all([
+      saveSettings({ cardSize: 'small' }),
+      saveSettings({ theme: 'dark' }),
+    ]);
+
+    const finalSettings = await getSettings();
+    expect(finalSettings.cardSize).toBe('small');
+    expect(finalSettings.theme).toBe('dark');
+  });
+
   test('saveSettings merges swimlaneCollapse dictionary without overwriting other containers', async () => {
     await saveSettings({
       swimlaneCollapse: { 'firefox-container-1': false },
