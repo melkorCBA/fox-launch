@@ -8,13 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-31
+
 ### Added
-- Conventional Commits v1.0.0 specification enforcement across agentic and collaborative workflows.
-- Automated PR title validation workflow (`.github/workflows/semantic-pr.yml`) using `action-semantic-pull-request`.
-- Project agent rule for Conventional Commits (`.agents/rules/conventional-commits.md`).
-- GitHub Copilot guidelines (`.github/copilot-instructions.md`) for Conventional Commits format.
-- Conventional Commits checklist and format specifications in `.github/pull_request_template.md`.
-- Conventional Commits guidance in `/create-pr` and `/create-release` agent skills.
+- Brand guide design tokens integration into light, dark, and system themes with refreshed icons and visual assets.
+- Official brand guidelines, interactive design manual, and SVG vector assets (`docs/brand/`).
+- Automated PR review feedback resolution skill (`/resolve-pr-comments`).
+- Conventional Commits v1.0.0 specification enforcement across agentic and collaborative workflows with automated PR validation (`.github/workflows/semantic-pr.yml`).
+- Repository issue and pull request templates for standardized bug reports and feature requests.
+
+### Changed
+- Refreshed store listing metadata, promotional hero banners, and showcase screenshots (`metadata/amo/`).
+
+### Fixed
+- AMO store listing tags alignment with Mozilla Add-ons whitelist and schema validation rules.
+- Theme and brand guide contrast adjustments meeting WCAG AA accessibility standards.
 
 ## [1.0.1] - 2026-10-30
 
