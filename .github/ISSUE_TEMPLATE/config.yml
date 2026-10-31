@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/melkorCBA/fox-launch/issues/7
+    about: Read how to contribute before opening an issue or pull request.
+  - name: Documentation
+    url: https://github.com/melkorCBA/fox-launch#readme
+    about: Read the README and project documentation.
+  - name: Mozilla Add-ons support
+    url: https://support.mozilla.org/products/firefox
+    about: For general Firefox and add-on usage questions.

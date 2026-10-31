@@ -1,0 +1,32 @@
+name: Feature request
+description: Suggest an idea or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / workflow friction
+      description: What are you trying to do, and what gets in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the experience you would like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workarounds considered
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy & offline compliance
+      description: FoxLaunch is fully offline and private.
+      options:
+        - label: This feature makes zero network calls.
+          required: true
+        - label: All data stays in local storage on the user's device.
+          required: true

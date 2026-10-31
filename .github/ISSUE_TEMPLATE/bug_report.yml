@@ -1,0 +1,58 @@
+name: Bug report
+description: Report something that is not working as expected
+labels: ["bug"]
+body:
+  - type: input
+    id: firefox-version
+    attributes:
+      label: Firefox version
+      placeholder: "e.g. 128.0"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "e.g. Windows 11, macOS 14, Ubuntu 24.04"
+    validations:
+      required: true
+  - type: input
+    id: extension-version
+    attributes:
+      label: FoxLaunch extension version
+      placeholder: "e.g. 1.0.0"
+    validations:
+      required: true
+  - type: textarea
+    id: containers
+    attributes:
+      label: Contextual identities configuration
+      description: How many containers do you have, and are they default or custom?
+      placeholder: "e.g. 4 containers, 3 default and 1 custom"
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a new tab
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console errors
+      description: Paste any errors from the Browser Console (Ctrl+Shift+J / Cmd+Shift+J).
+      render: shell
