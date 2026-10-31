@@ -5,7 +5,7 @@ description: Guide and automate the release lifecycle from main to release, hand
 
 # Create Release
 
-Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozilla Add-ons (AMO) via the `release` branch and GitHub Actions, driven by Conventional Commits v1.0.0.
+Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozilla Add-ons (AMO) via the `release` branch and GitHub Actions, then merge the published release back into `main`, driven by Conventional Commits v1.0.0.
 
 ---
 
@@ -119,6 +119,7 @@ node scripts/sync-amo-listing.mjs --dry-run
      - Release Tag:   v<version>
      - Commit:        chore(release): prepare v<version>
      - Push command:  git push --atomic origin release "refs/tags/v<version>"
+     - After successful publication: merge v<version> into main and push origin/main
 
    Proceed? (yes/no)
    ```
@@ -133,3 +134,38 @@ node scripts/sync-amo-listing.mjs --dry-run
 3. Report the triggered GitHub Actions workflow run:
    - Provide the run link for `.github/workflows/release.yml`.
    - Remind the user to click **Approve and Deploy** on the `production-amo` deployment gate when prompted by GitHub.
+
+---
+
+### Step 7: Merge the Published Release Back into `main`
+1. Wait for the `.github/workflows/release.yml` run for `v<version>` to complete successfully, including any required deployment approvals. Do not merge back after a failed, cancelled, pending, or dry-run publication.
+2. Verify the working tree is clean with `git status --short`. If there are uncommitted changes, stop and ask the user to commit or stash them first.
+3. Fetch the latest branches and the exact published tag (explicit refspecs also support single-branch clones):
+   ```powershell
+   git fetch origin "refs/heads/main:refs/remotes/origin/main" "refs/heads/release:refs/remotes/origin/release" "refs/tags/v<version>:refs/tags/v<version>"
+   ```
+4. Switch to `main` and fast-forward it to the remote state:
+   ```powershell
+   git checkout main
+   git pull --ff-only origin main
+   ```
+   If no local `main` branch exists, create it without tracking instead (`git checkout -b main origin/main`), as subsequent pull and push commands explicitly specify `origin main`.
+5. Check for local-only commits before merging:
+   ```powershell
+   git log --oneline origin/main..HEAD
+   ```
+   If local `main` is ahead of `origin/main` (local-only commits exist), stop and ask the user for confirmation before proceeding; do not reset or silently push them.
+6. Merge the exact published tag, not the moving `release` branch tip, so later unreleased commits are not included:
+   ```powershell
+   git merge --no-edit "refs/tags/v<version>" -m "chore(release): merge v<version> back into main"
+   ```
+7. Verify the published commit is included before pushing:
+   ```powershell
+   git merge-base --is-ancestor "refs/tags/v<version>^{commit}" HEAD
+   git push origin main
+   ```
+8. Report that `origin/main` now includes the released versions and changelog, and leave the working branch on `main`.
+
+*Check every command's exit status before continuing. If fetching, switching, fast-forwarding, merging, verification, or pushing fails, stop and report the error. Do not force-push or bypass branch protection. For merge conflicts, ask the user for resolution before committing or pushing; do not overwrite newer `main` changes. A failed merge-back does not undo the published release: resume this step after resolving the blocker without recreating the tag or publishing again.*
+
+*These GitHub release operations require network access; they do not add network calls, telemetry, or external data storage to the extension.*
