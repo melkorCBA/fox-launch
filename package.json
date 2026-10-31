@@ -26,6 +26,8 @@
     "build:watch": "vite build --watch",
     "lint:ext": "web-ext lint --source-dir dist",
     "package": "pnpm run build && web-ext build --source-dir dist --artifacts-dir web-ext-artifacts --overwrite-dest && git archive --format=zip --output=web-ext-artifacts/foxlaunch-source.zip HEAD",
+    "generate:icons": "node scripts/generate-icons.mjs",
+    "capture:amo": "node scripts/capture-amo-screenshots.mjs",
     "test:e2e": "playwright test",
     "test": "pnpm run typecheck && pnpm run build && pnpm run lint:ext && pnpm run test:e2e"
   },

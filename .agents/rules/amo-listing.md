@@ -30,5 +30,16 @@ These guidelines apply whenever creating, editing, or reviewing files in `metada
 * **Permissions Accuracy:**
   - The "Permissions Explained" section must strictly match permissions declared in `manifest.json`.
 
-## 4. Review Requirement
+## 4. Visual Listing Assets Constraints
+* **Promotional Screenshots (`metadata/amo/screenshots/`):**
+  - Strictly **at most 5 screenshots** allowed on AMO.
+  - Recommended dimensions: **2400x1800 pixels** (4:3 aspect ratio).
+  - Format: PNG.
+* **Master Add-on Icon (`metadata/amo/assets/foxlaunch-icon-128.png`):**
+  - Single upload master icon: **128x128 pixels** PNG with transparent background.
+  - Must remain crisp when downscaled to 64x64 and 32x32 previews by AMO.
+* **Hero Banner (`metadata/amo/assets/foxlaunch-hero-1280x640.png`):**
+  - **1280x640 pixels** PNG rendered from SVG.
+
+## 5. Review Requirement
 * Changes to these files must always be shown to the user as a clear diff for confirmation before being committed.
