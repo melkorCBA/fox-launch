@@ -4,6 +4,7 @@ A fast, clean New Tab page that organizes your shortcuts by Firefox Multi-Accoun
 - **Container Swimlanes:** Groups your bookmarks and shortcuts into color-coded container lanes (Work, Personal, Banking, etc.).
 - **1-Click Launch:** Opens links directly in their assigned container. Left-click for foreground, middle-click for background.
 - **Instant Filter (`/`):** Press `/` anywhere on the page to search shortcuts across all containers.
+- **Favicons & Clean Avatars:** Displays real site favicons captured locally during browsing, with clean letter avatars as offline fallback.
 - **Easy Customization:** Drag to reorder, add/edit links, or toggle light and dark themes.
 
 ### Keyboard Shortcuts

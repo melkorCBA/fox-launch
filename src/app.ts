@@ -13,7 +13,8 @@ import './styles/onboarding.css';
 
 import type { ContainerContext, ShortcutItem, FoxLaunchSettings, ThemeMode } from './types';
 import { getContainers } from './services/containers';
-import { getShortcuts, getSettings, addShortcut, updateShortcut, deleteShortcut, saveShortcuts, saveSettings } from './services/storage';
+import { getShortcuts, getSettings, addShortcut, updateShortcut, deleteShortcut, saveShortcuts, saveSettings, STORAGE_KEYS, updateShortcutFavicon, deleteShortcutFavicon } from './services/storage';
+import { findFaviconFromOpenTabs } from './services/favicon';
 import { renderSwimlane, type SwimlaneCallbacks } from './components/swimlane';
 import { setupSwimlaneReordering } from './components/dragDrop';
 import { initSearch, type SearchController } from './components/search';
@@ -98,10 +99,15 @@ function handleOpenAddModal(cookieStoreId: string): void {
     containerName: container?.name,
     triggerElement: addTrigger,
     onSubmit: async (formData) => {
-      await addShortcut(formData.cookieStoreId, {
+      const favIconUrl = await findFaviconFromOpenTabs(formData.url);
+      const newShortcut = await addShortcut(formData.cookieStoreId, {
         title: formData.title,
         url: formData.url,
+        favIconUrl,
       });
+      if (favIconUrl) {
+        await updateShortcutFavicon(newShortcut.id, favIconUrl, formData.url);
+      }
       await refreshSwimlane(formData.cookieStoreId);
     },
   });
@@ -116,17 +122,34 @@ function handleOpenEditModal(shortcut: ShortcutItem): void {
     initialData: shortcut,
     triggerElement: cardTrigger,
     onSubmit: async (formData) => {
+      let favIconUrl: string | undefined = undefined;
+      if (formData.url === shortcut.url) {
+        favIconUrl = shortcut.favIconUrl;
+        if (!favIconUrl) {
+          favIconUrl = await findFaviconFromOpenTabs(formData.url);
+        }
+      } else {
+        // Clear previous site favicon when URL changes
+        await deleteShortcutFavicon(shortcut.id);
+        favIconUrl = await findFaviconFromOpenTabs(formData.url);
+      }
+
       await updateShortcut(formData.cookieStoreId, {
         id: shortcut.id,
         title: formData.title,
         url: formData.url,
+        favIconUrl,
       });
+      if (favIconUrl) {
+        await updateShortcutFavicon(shortcut.id, favIconUrl, formData.url);
+      }
       await refreshSwimlane(formData.cookieStoreId);
     },
   });
 }
 
 async function handleDeleteShortcut(shortcut: ShortcutItem): Promise<void> {
+  await deleteShortcutFavicon(shortcut.id);
   const deleted = await deleteShortcut(shortcut.cookieStoreId, shortcut.id);
   await refreshSwimlane(shortcut.cookieStoreId);
 
@@ -248,6 +271,8 @@ export async function initializeApp(): Promise<void> {
   // Mount swimlanes
   mountSwimlanes(shortcutsMap);
 
+  setupStorageListener();
+
   // Initialize Search Controller
   searchController = initSearch();
 
@@ -295,6 +320,30 @@ export async function initializeApp(): Promise<void> {
 
   const durationMs = performance.now() - startTime;
   (window as any).__FOXLAUNCH_MOUNT_DURATION__ = durationMs;
+}
+
+
+export async function refreshAllSwimlanes(): Promise<void> {
+  const settings = await getSettings();
+  appSettings = settings;
+  for (const container of discoveredContainers) {
+    if (isContainerVisible(container, settings.containerVisibility)) {
+      await refreshSwimlane(container.cookieStoreId);
+    }
+  }
+}
+
+let storageListenerAttached = false;
+function setupStorageListener(): void {
+  if (storageListenerAttached) return;
+  if (typeof browser !== 'undefined' && browser.storage?.onChanged) {
+    browser.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName === 'local' && (changes[STORAGE_KEYS.SHORTCUTS] || changes[STORAGE_KEYS.FAVICONS])) {
+        refreshAllSwimlanes();
+      }
+    });
+    storageListenerAttached = true;
+  }
 }
 
 export const renderApp = initializeApp;

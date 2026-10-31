@@ -50,5 +50,6 @@ export default defineConfig({
     url: 'http://127.0.0.1:5173/newtab.html',
     reuseExistingServer: !process.env.CI,
     timeout: 30 * 1000,
+    cwd: '.',
   },
 });

@@ -26,6 +26,8 @@ export interface ShortcutItem {
   title: string;
   /** Extracted domain hostname used for avatar derivation */
   domain: string;
+  /** Optional cached favicon URL or data URI */
+  favIconUrl?: string;
   /** Creation timestamp (milliseconds since epoch: Date.now()) */
   createdAt: number;
   /** 0-indexed display sort order within the container swimlane */
@@ -145,6 +147,10 @@ export interface ContainerContext {
  * Options configuring tab dispatch behavior.
  */
 export interface DispatchOptions {
+  /** Associated shortcut ID for targeted favicon capture */
+  shortcutId?: string;
+  /** Whether the shortcut already has a cached favicon */
+  hasFavicon?: boolean;
   /**
    * Whether the tab should become the active foreground tab.
    * - Left-click: active = true
