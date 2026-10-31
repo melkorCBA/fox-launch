@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Official Mozilla Add-ons (AMO) visual listing assets: 128x128 scalable master icon (`metadata/amo/assets/foxlaunch-icon-128.png`) and 2400x1800 (4:3) promotional screenshots (`metadata/amo/screenshots/`).
+- Automated Playwright screenshot pipeline script (`scripts/capture-amo-screenshots.mjs`) supporting parameterized scene captures, icon downscale verification, and asset pruning.
+- Dedicated agent skill `/manage-amo-screenshots` to evaluate feature commit sets for visual impact and maintain the AMO 5-screenshot limit.
+- Integration of background screenshot manager agent into `/create-release` workflow.
+- AMO visual asset constraints documented in `.agents/rules/amo-listing.md`.
 - Conventional Commits v1.0.0 specification enforcement across agentic and collaborative workflows.
 - Automated PR title validation workflow (`.github/workflows/semantic-pr.yml`) using `action-semantic-pull-request`.
 - Project agent rule for Conventional Commits (`.agents/rules/conventional-commits.md`).
@@ -33,10 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial public release of FoxLaunch on Mozilla Add-ons (AMO).
 - Container-aware swimlanes automatically mapped to Firefox Multi-Account Containers.
-- 1-click tab dispatch into isolated container contexts with foreground and background launch support.
-- Fast shortcut search with `/` keyboard trigger.
-- In-page shortcut CRUD with drag-and-drop reordering and 5-second undo toast.
-- Offline procedural letter avatars with WCAG AA contrast.
-- Light, dark, and system theme options with launcher auto-close settings.
-- 4-step first-run onboarding tour.
-- Strict Manifest V3 CSP with zero telemetry and zero external network calls.
+- 1-click tab dispatch into container contexts.
+- Instant search filter (`/`) with keyboard shortcuts.
+- Customizable layout, dark/light themes, and drag-and-drop shortcut organization.
+- Privacy-first architecture: 100% local execution, zero tracking, zero telemetry.

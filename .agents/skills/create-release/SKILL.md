@@ -39,6 +39,14 @@ Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozil
    - `(Recommended) Merge all latest commits from main`
    - `Cherry-pick specific commits`
 4. Execute the chosen strategy (e.g. `git merge origin/main --no-edit`).
+5. **Launch Background AMO Screenshot Manager Agent:**
+   Immediately after the user confirms which commits to ship and the merge is executed, launch a background subagent invoking the `manage-amo-screenshots` skill:
+   ```powershell
+   # Background agent instruction:
+   # Evaluates shipped commits for UI/visual impact, manages the 5-screenshot AMO hard cap,
+   # captures 2400x1800 screenshots via Playwright, and prunes redundant screenshots.
+   ```
+   - The subagent runs concurrently in the background while the release workflow continues with Step 3 (Version Calculation) and Step 4 (Changelog Preparation).
 
 ---
 
@@ -79,20 +87,23 @@ Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozil
      ## [<new-version>] - YYYY-MM-DD
      ```
    - Leave an empty `## [Unreleased]` template above it for future work.
-4. Check if store listing files changed relative to the previous release tag:
-   ```powershell
-   $PREV_TAG = (git describe --tags --abbrev=0 2>$null)
-   if ($PREV_TAG) {
-     $CHANGED = git diff --name-only "$PREV_TAG" HEAD -- metadata/amo/
-   } else {
-     # First release: release workflow always syncs store listing
-     $CHANGED = "First release baseline"
-   }
-   ```
+4. **Await Screenshot Agent & Check Listing Impact:**
+   - Ensure the background `manage-amo-screenshots` agent has completed its execution.
+   - Check if store listing or visual asset files changed relative to the previous release tag:
+     ```powershell
+     $PREV_TAG = (git describe --tags --abbrev=0 2>$null)
+     if ($PREV_TAG) {
+       $CHANGED = git diff --name-only "$PREV_TAG" HEAD -- metadata/amo/
+     } else {
+       # First release: release workflow always syncs store listing
+       $CHANGED = "First release baseline"
+     }
+     ```
 5. **Decision Point 3: Review Release Notes & Listing Impact**
    Present the release notes in chat:
    - Display the bullet points that will be submitted to the AMO Version History and GitHub Release.
    - Note whether `metadata/amo/` was modified relative to `$PREV_TAG` (which will trigger a product page listing sync upon approval).
+   - Display any screenshot additions or pruning reported by `manage-amo-screenshots`.
    - Ask user: *"Do these release notes look accurate, or would you like to make any adjustments?"*
 
 ---

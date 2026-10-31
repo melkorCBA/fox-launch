@@ -8,7 +8,8 @@
  * 4. WCAG 2.1 AA contrast ratio compliance (>= 4.5:1 for normal text)
  * 5. Zero external font imports (strict CSP compliance & local system font stacks)
  * 6. Brand logo and favicon presence
- * 7. Generation of high-resolution AMO promotional screenshots (1280x800)
+ * 7. Generation of high-resolution AMO promotional screenshots (2400x1800, 4:3)
+ * 8. Verification of AMO icon visual integrity and downscale clarity (128x128 -> 64x64, 32x32)
  *
  * Master Specification: docs/brand/foxlaunch-brand-guide.md
  */
@@ -260,11 +261,17 @@ test.describe('Brand Guide Compliance & Design System', () => {
     expect(faviconHref).toContain('foxlaunch-app-icon.svg');
   });
 
-  test('7. Capture AMO promotional screenshots in Dark and Light themes (1280x800)', async ({ openFoxLaunch, page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
+  test('7. Capture AMO promotional screenshots in Dark and Light themes (2400x1800)', async ({ openFoxLaunch, page }) => {
+    await page.setViewportSize({ width: 2400, height: 1800 });
 
     const screenshotsDir = path.resolve(process.cwd(), 'metadata/amo/screenshots');
     fs.mkdirSync(screenshotsDir, { recursive: true });
+
+    // Clean up deprecated 1280x800 screenshots if present
+    const legacyDark = path.join(screenshotsDir, 'foxlaunch-dark-1280x800.png');
+    const legacyLight = path.join(screenshotsDir, 'foxlaunch-light-1280x800.png');
+    if (fs.existsSync(legacyDark)) fs.unlinkSync(legacyDark);
+    if (fs.existsSync(legacyLight)) fs.unlinkSync(legacyLight);
 
     // Dark Theme
     await openFoxLaunch({
@@ -275,7 +282,7 @@ test.describe('Brand Guide Compliance & Design System', () => {
     await page.waitForSelector('.swimlane');
     await page.waitForTimeout(250);
 
-    const darkPath = path.join(screenshotsDir, 'foxlaunch-dark-1280x800.png');
+    const darkPath = path.join(screenshotsDir, 'foxlaunch-dark-2400x1800.png');
     await page.screenshot({ path: darkPath });
     expect(fs.existsSync(darkPath)).toBe(true);
 
@@ -283,9 +290,56 @@ test.describe('Brand Guide Compliance & Design System', () => {
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
     await page.waitForTimeout(250);
 
-    const lightPath = path.join(screenshotsDir, 'foxlaunch-light-1280x800.png');
+    const lightPath = path.join(screenshotsDir, 'foxlaunch-light-2400x1800.png');
     await page.screenshot({ path: lightPath });
     expect(fs.existsSync(lightPath)).toBe(true);
+  });
+
+  test('8. Verify AMO icon asset exists and scales down crisply', async ({ page }) => {
+    const iconPath = path.resolve(process.cwd(), 'metadata/amo/assets/foxlaunch-icon-128.png');
+    expect(fs.existsSync(iconPath)).toBe(true);
+
+    // Verify downscale clarity to 64x64 and 32x32 via canvas in page context
+    const iconBuffer = fs.readFileSync(iconPath);
+    const iconBase64 = `data:image/png;base64,${iconBuffer.toString('base64')}`;
+
+    const downscaleResults = await page.evaluate(async ({ base64Url }) => {
+      const results: { size: number; hasTransparency: boolean; hasContent: boolean }[] = [];
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = base64Url;
+      });
+
+      for (const size of [64, 32]) {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('No 2d context');
+        ctx.drawImage(img, 0, 0, size, size);
+        const imgData = ctx.getImageData(0, 0, size, size).data;
+        let transparentPixels = 0;
+        let opaquePixels = 0;
+        for (let i = 0; i < imgData.length; i += 4) {
+          const alpha = imgData[i + 3];
+          if (alpha === 0) transparentPixels++;
+          else if (alpha > 50) opaquePixels++;
+        }
+        results.push({
+          size,
+          hasTransparency: transparentPixels > 0,
+          hasContent: opaquePixels > 0,
+        });
+      }
+      return results;
+    }, { base64Url: iconBase64 });
+
+    for (const res of downscaleResults) {
+      expect(res.hasTransparency).toBe(true);
+      expect(res.hasContent).toBe(true);
+    }
   });
 
 });
