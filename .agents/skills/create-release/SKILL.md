@@ -149,17 +149,22 @@ node scripts/sync-amo-listing.mjs --dry-run
    git checkout main
    git pull --ff-only origin main
    ```
-   If no local `main` branch exists, use `git checkout -b main --track origin/main` instead.
-5. Merge the exact published tag, not the moving `release` branch tip, so later unreleased commits are not included:
+   If no local `main` branch exists, create it without tracking instead (`git checkout -b main origin/main`), as subsequent pull and push commands explicitly specify `origin main`.
+5. Check for local-only commits before merging:
+   ```powershell
+   git log --oneline origin/main..HEAD
+   ```
+   If local `main` is ahead of `origin/main` (local-only commits exist), stop and ask the user for confirmation before proceeding; do not reset or silently push them.
+6. Merge the exact published tag, not the moving `release` branch tip, so later unreleased commits are not included:
    ```powershell
    git merge --no-edit "refs/tags/v<version>" -m "chore(release): merge v<version> back into main"
    ```
-6. Verify the published commit is included before pushing:
+7. Verify the published commit is included before pushing:
    ```powershell
    git merge-base --is-ancestor "refs/tags/v<version>^{commit}" HEAD
    git push origin main
    ```
-7. Report that `origin/main` now includes the released versions and changelog, and leave the working branch on `main`.
+8. Report that `origin/main` now includes the released versions and changelog, and leave the working branch on `main`.
 
 *Check every command's exit status before continuing. If fetching, switching, fast-forwarding, merging, verification, or pushing fails, stop and report the error. Do not force-push or bypass branch protection. For merge conflicts, ask the user for resolution before committing or pushing; do not overwrite newer `main` changes. A failed merge-back does not undo the published release: resume this step after resolving the blocker without recreating the tag or publishing again.*
 
