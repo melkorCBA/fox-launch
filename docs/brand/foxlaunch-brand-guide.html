@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoxLaunch Core — Official Brand Style Manual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --fx-orange: #FF7139;
+      --fx-orange-hover: #E05620;
+      --fx-violet: #8000FF;
+      --fx-magenta: #FF2A85;
+      --fx-yellow: #FFD43B;
+      --bg-dark: #1C1B22;
+      --bg-surface: #2B2A33;
+      --bg-surface-elevated: #383742;
+      --border-subtle: rgba(255, 255, 255, 0.1);
+      --border-active: rgba(255, 113, 57, 0.5);
+      --text-main: #FBFBFE;
+      --text-muted: #8F8E9D;
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      line-height: 1.6;
+      padding: 48px 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .guide-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    header.guide-header {
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      background: rgba(255, 113, 57, 0.15);
+      color: var(--fx-orange);
+      border: 1px solid rgba(255, 113, 57, 0.3);
+      margin-bottom: 12px;
+    }
+    .guide-title {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #FFF;
+    }
+    .guide-subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--fx-orange);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 24px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    /* Logo Showcase */
+    .logo-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      background: #15141A;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 32px 20px;
+      text-align: center;
+      position: relative;
+    }
+    .copy-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fx-orange);
+      background: rgba(255, 113, 57, 0.1);
+      border: 1px solid rgba(255, 113, 57, 0.3);
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .copy-btn:hover {
+      background: var(--fx-orange);
+      color: #FFF;
+    }
+
+    /* Color Swatch */
+    .swatch {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .swatch:hover {
+      transform: translateY(-2px);
+      border-color: var(--fx-orange);
+    }
+    .swatch-color {
+      height: 80px;
+      width: 100%;
+    }
+    .swatch-info {
+      padding: 12px 14px;
+    }
+    .swatch-name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .swatch-hex {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--fx-orange);
+      margin-top: 2px;
+    }
+    .swatch-role {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Do / Don't Boxes */
+    .rule-box {
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 14px;
+    }
+    .rule-do {
+      background: rgba(16, 185, 129, 0.1);
+      border-left: 3px solid #10B981;
+      color: #D1FAE5;
+    }
+    .rule-dont {
+      background: rgba(239, 68, 68, 0.1);
+      border-left: 3px solid #EF4444;
+      color: #FEE2E2;
+    }
+
+    /* Typography Scale Table */
+    .type-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 12px 0;
+    }
+    .type-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="guide-container">
+
+    <!-- Header -->
+    <header class="guide-header">
+      <div>
+        <span class="badge">Official Brand Manual • v1.0.0</span>
+        <h1 class="guide-title">FoxLaunch Core</h1>
+        <p class="guide-subtitle">The missing home for your Firefox Multi-Account Containers.</p>
+      </div>
+      <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); text-align: right;">
+        <div>STANCE: FIRST-PARTY PURIST</div>
+        <div style="color: var(--fx-orange);">TOKENS: METROPOLIS / ACORN</div>
+      </div>
+    </header>
+
+    <!-- 1. Strategic Core -->
+    <section>
+      <div class="section-title">01 • Strategic Foundation</div>
+      <div class="grid-4">
+        <div class="card">
+          <div style="font-size: 18px; margin-bottom: 8px;">🏛️</div>
+          <h3 style="font-size: 14px; margin-bottom: 6px;">Ecosystem Integrity</h3>
+          <p style="font-size: 13px; color: var(--text-muted);">Honor native Firefox conventions and Acorn design tokens without unnecessary reinvention.</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 18px; margin-bottom: 8px;">🔒</div>
+          <h3 style="font-size: 14px; margin-bottom: 6px;">Zero-Telemetry</h3>
+          <p style="font-size: 13px; color: var(--text-muted);">100% local browser execution. Zero network pings, cookies, or remote tracking scripts.</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 18px; margin-bottom: 8px;">⚡</div>
+          <h3 style="font-size: 14px; margin-bottom: 6px;">Sub-10ms Dispatch</h3>
+          <p style="font-size: 13px; color: var(--text-muted);">Pure vanilla DOM execution with 0ms framework lag. Every tab launches instantaneously.</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 18px; margin-bottom: 8px;">♿</div>
+          <h3 style="font-size: 14px; margin-bottom: 6px;">Accessible Craft</h3>
+          <p style="font-size: 13px; color: var(--text-muted);">WCAG 2.1 AA keyboard operability (`/` filter, arrows, Escape) and dynamic luminance contrast.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Logo System -->
+    <section>
+      <div class="section-title">02 • Logography & Symbols</div>
+      <div class="grid-3">
+        
+        <!-- Primary Flame Ensō -->
+        <div class="logo-card">
+          <svg width="120" height="120" viewBox="0 0 100 100" fill="none">
+            <defs>
+              <linearGradient id="g1" x1="15" y1="15" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#FFB800"/>
+                <stop offset="45%" stop-color="#FF7139"/>
+                <stop offset="100%" stop-color="#C6007A"/>
+              </linearGradient>
+            </defs>
+            <path d="M70 34C78 44 78 61 68 72C56 84 35 83 24 70C14 57 17 37 31 26C43 17 58 20 65 29" stroke="url(#g1)" stroke-width="5.5" stroke-linecap="round"/>
+            <path d="M60 28L71 20L69 32" stroke="#FFB800" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="43" cy="46" r="3.5" fill="#FFFFFF"/>
+            <circle cx="76" cy="26" r="3" fill="#FFD43B"/>
+          </svg>
+          <div style="font-size: 13px; font-weight: 700;">Curled Ensō Flame Fox</div>
+          <div style="font-size: 11px; color: var(--text-muted);">Primary Brandmark</div>
+        </div>
+
+        <!-- App Icon -->
+        <div class="logo-card">
+          <svg width="100" height="100" viewBox="0 0 128 128" fill="none">
+            <defs>
+              <linearGradient id="g2" x1="20" y1="20" x2="108" y2="108" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#FFB800"/>
+                <stop offset="45%" stop-color="#FF7139"/>
+                <stop offset="100%" stop-color="#C6007A"/>
+              </linearGradient>
+            </defs>
+            <rect width="128" height="128" rx="30" fill="#2B2A33"/>
+            <rect x="1.5" y="1.5" width="125" height="125" rx="28.5" stroke="rgba(255,255,255,0.12)" stroke-width="3"/>
+            <circle cx="64" cy="64" r="50" stroke="#375AE6" stroke-width="2.5" stroke-dasharray="10 26" opacity="0.6"/>
+            <g transform="translate(14, 14)">
+              <path d="M70 34C78 44 78 61 68 72C56 84 35 83 24 70C14 57 17 37 31 26C43 17 58 20 65 29" stroke="url(#g2)" stroke-width="6" stroke-linecap="round"/>
+              <path d="M60 28L71 20L69 32" stroke="#FFB800" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="43" cy="46" r="3.5" fill="#FFFFFF"/>
+            </g>
+          </svg>
+          <div style="font-size: 13px; font-weight: 700;">Squircle App Icon</div>
+          <div style="font-size: 11px; color: var(--text-muted);">AMO & Extension Manifest</div>
+        </div>
+
+        <!-- Monoline -->
+        <div class="logo-card">
+          <svg width="120" height="120" viewBox="0 0 100 100" fill="none">
+            <path d="M70 34C78 44 78 61 68 72C56 84 35 83 24 70C14 57 17 37 31 26C43 17 58 20 65 29" stroke="#FF7139" stroke-width="5" stroke-linecap="round"/>
+            <path d="M60 28L71 20L69 32" stroke="#FF7139" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="43" cy="46" r="3.5" fill="#FF7139"/>
+          </svg>
+          <div style="font-size: 13px; font-weight: 700;">Monoline Stroke</div>
+          <div style="font-size: 11px; color: var(--text-muted);">High-Contrast & Print</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3. Color Tokens -->
+    <section>
+      <div class="section-title">03 • Color Palette & Design Tokens</div>
+      <div class="grid-4">
+        
+        <div class="swatch" onclick="navigator.clipboard.writeText('#FF7139'); alert('Copied #FF7139');">
+          <div class="swatch-color" style="background: #FF7139;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Firefox Flame</div>
+            <div class="swatch-hex">#FF7139</div>
+            <div class="swatch-role">Primary Accent / CTAs</div>
+          </div>
+        </div>
+
+        <div class="swatch" onclick="navigator.clipboard.writeText('#8000FF'); alert('Copied #8000FF');">
+          <div class="swatch-color" style="background: #8000FF;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Mozilla Violet</div>
+            <div class="swatch-hex">#8000FF</div>
+            <div class="swatch-role">Depth Accent</div>
+          </div>
+        </div>
+
+        <div class="swatch" onclick="navigator.clipboard.writeText('#FF2A85'); alert('Copied #FF2A85');">
+          <div class="swatch-color" style="background: #FF2A85;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Firefox Magenta</div>
+            <div class="swatch-hex">#FF2A85</div>
+            <div class="swatch-role">Active Focus Rings</div>
+          </div>
+        </div>
+
+        <div class="swatch" onclick="navigator.clipboard.writeText('#1C1B22'); alert('Copied #1C1B22');">
+          <div class="swatch-color" style="background: #1C1B22;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Obsidian Base</div>
+            <div class="swatch-hex">#1C1B22</div>
+            <div class="swatch-role">Firefox Dark Chrome</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. Typography Hierarchy -->
+    <section>
+      <div class="section-title">04 • Typography Scale</div>
+      <div class="card">
+        <div class="type-row">
+          <span style="font-size: 28px; font-weight: 800;">Display H1 — FoxLaunch Core</span>
+          <span class="type-meta">28px / 800 Bold / 1.25</span>
+        </div>
+        <div class="type-row">
+          <span style="font-size: 18px; font-weight: 700;">Section H2 — Container Swimlanes</span>
+          <span class="type-meta">18px / 700 Bold / 1.30</span>
+        </div>
+        <div class="type-row">
+          <span style="font-size: 15px; font-weight: 600;">Swimlane Header — Work Profile</span>
+          <span class="type-meta">15px / 600 SemiBold / 1.40</span>
+        </div>
+        <div class="type-row">
+          <span style="font-size: 13px; font-weight: 400; color: #CFCEE0;">Body Text — Organizes shortcuts into isolated container profiles.</span>
+          <span class="type-meta">13px / 400 Regular / 1.50</span>
+        </div>
+        <div class="type-row" style="border-bottom: none;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--fx-yellow);">[/] focus • [Enter] dispatch</span>
+          <span class="type-meta">JetBrains Mono 11px / 700 Bold</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Editorial Voice & Rules -->
+    <section>
+      <div class="section-title">05 • Verbal Voice Rules</div>
+      <div class="grid-2">
+        <div class="rule-box rule-do">
+          <strong style="display: block; margin-bottom: 6px;">✓ DO SAY:</strong>
+          "Organize your shortcuts into native container swimlanes. Launch tabs directly into isolated profiles in one click."
+        </div>
+        <div class="rule-box rule-dont">
+          <strong style="display: block; margin-bottom: 6px;">✗ DON'T SAY:</strong>
+          "Disrupt legacy browser silos with decentralized container multiplexing infrastructure."
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>
