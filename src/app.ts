@@ -13,7 +13,8 @@ import './styles/onboarding.css';
 
 import type { ContainerContext, ShortcutItem, FoxLaunchSettings, ThemeMode } from './types';
 import { getContainers } from './services/containers';
-import { getShortcuts, getSettings, addShortcut, updateShortcut, deleteShortcut, saveShortcuts, saveSettings } from './services/storage';
+import { getShortcuts, getSettings, addShortcut, updateShortcut, deleteShortcut, saveShortcuts, saveSettings, STORAGE_KEYS } from './services/storage';
+import { findFaviconFromOpenTabs } from './services/favicon';
 import { renderSwimlane, type SwimlaneCallbacks } from './components/swimlane';
 import { setupSwimlaneReordering } from './components/dragDrop';
 import { initSearch, type SearchController } from './components/search';
@@ -98,9 +99,11 @@ function handleOpenAddModal(cookieStoreId: string): void {
     containerName: container?.name,
     triggerElement: addTrigger,
     onSubmit: async (formData) => {
+      const favIconUrl = await findFaviconFromOpenTabs(formData.url);
       await addShortcut(formData.cookieStoreId, {
         title: formData.title,
         url: formData.url,
+        favIconUrl,
       });
       await refreshSwimlane(formData.cookieStoreId);
     },
@@ -116,10 +119,16 @@ function handleOpenEditModal(shortcut: ShortcutItem): void {
     initialData: shortcut,
     triggerElement: cardTrigger,
     onSubmit: async (formData) => {
+      let favIconUrl = shortcut.favIconUrl;
+      if (formData.url !== shortcut.url || !favIconUrl) {
+        const found = await findFaviconFromOpenTabs(formData.url);
+        if (found) favIconUrl = found;
+      }
       await updateShortcut(formData.cookieStoreId, {
         id: shortcut.id,
         title: formData.title,
         url: formData.url,
+        favIconUrl,
       });
       await refreshSwimlane(formData.cookieStoreId);
     },
@@ -248,6 +257,8 @@ export async function initializeApp(): Promise<void> {
   // Mount swimlanes
   mountSwimlanes(shortcutsMap);
 
+  setupStorageListener();
+
   // Initialize Search Controller
   searchController = initSearch();
 
@@ -295,6 +306,20 @@ export async function initializeApp(): Promise<void> {
 
   const durationMs = performance.now() - startTime;
   (window as any).__FOXLAUNCH_MOUNT_DURATION__ = durationMs;
+}
+
+
+let storageListenerAttached = false;
+function setupStorageListener(): void {
+  if (storageListenerAttached) return;
+  if (typeof browser !== 'undefined' && browser.storage?.onChanged) {
+    browser.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName === 'local' && changes[STORAGE_KEYS.SHORTCUTS]) {
+        initializeApp();
+      }
+    });
+    storageListenerAttached = true;
+  }
 }
 
 export const renderApp = initializeApp;

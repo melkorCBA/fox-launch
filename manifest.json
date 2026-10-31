@@ -17,6 +17,11 @@
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
+  "background": {
+    "scripts": [
+      "assets/background.js"
+    ]
+  },
   "permissions": [
     "contextualIdentities",
     "cookies",

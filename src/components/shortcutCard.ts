@@ -53,17 +53,28 @@ export function renderShortcutCard(
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', shortcut.title);
 
-  // 1. Procedural SVG Avatar
+  // 1. Procedural SVG Avatar with Favicon Support
   const avatarWrapper = document.createElement('div');
   avatarWrapper.className = 'shortcut-avatar-wrapper';
 
   const avatarImg = document.createElement('img');
   avatarImg.className = 'shortcut-avatar';
   avatarImg.setAttribute('data-testid', 'shortcut-avatar');
-  avatarImg.src = generateAvatarSvg(shortcut.domain, containerColorCode);
   avatarImg.alt = shortcut.title;
   avatarImg.width = 32;
   avatarImg.height = 32;
+
+  const fallbackSvg = generateAvatarSvg(shortcut.domain, containerColorCode);
+
+  if (shortcut.favIconUrl) {
+    avatarImg.src = shortcut.favIconUrl;
+    avatarImg.onerror = () => {
+      avatarImg.src = fallbackSvg;
+    };
+  } else {
+    avatarImg.src = fallbackSvg;
+  }
+
   avatarWrapper.appendChild(avatarImg);
   card.appendChild(avatarWrapper);
 
@@ -199,7 +210,11 @@ export function renderShortcutCard(
 
   // 4. Tab Dispatch Handling (delegates directly to unified dispatchShortcut service)
   const executeDispatch = (active: boolean) => {
-    dispatchShortcut(shortcut.url, shortcut.cookieStoreId, { active });
+    dispatchShortcut(shortcut.url, shortcut.cookieStoreId, {
+      active,
+      shortcutId: shortcut.id,
+      hasFavicon: !!shortcut.favIconUrl,
+    });
   };
 
   // Left click / Ctrl / Meta click

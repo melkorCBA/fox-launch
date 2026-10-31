@@ -92,7 +92,7 @@ export async function saveShortcuts(
  */
 export async function addShortcut(
   cookieStoreId: string,
-  itemInput: { title: string; url: string; domain?: string; id?: string; createdAt?: number }
+  itemInput: { title: string; url: string; domain?: string; id?: string; createdAt?: number; favIconUrl?: string }
 ): Promise<ShortcutItem> {
   const all = await getShortcuts();
   const currentItems = all[cookieStoreId] ? [...all[cookieStoreId]] : [];
@@ -108,6 +108,7 @@ export async function addShortcut(
     domain,
     createdAt: itemInput.createdAt || Date.now(),
     order: currentItems.length,
+    favIconUrl: itemInput.favIconUrl,
   };
 
   currentItems.push(newShortcut);
@@ -165,6 +166,36 @@ export async function updateShortcut(
  * Deletes a shortcut from a container by ID.
  * Re-indexes remaining items' order and returns the deleted item (enables undo toast).
  */
+
+/**
+ * Updates the cached favicon for a specific shortcut ID across containers.
+ * Returns true if the shortcut was found and updated.
+ */
+export async function updateShortcutFavicon(
+  shortcutId: string,
+  favIconUrl: string
+): Promise<boolean> {
+  const all = await getShortcuts();
+  let found = false;
+
+  for (const cookieStoreId of Object.keys(all)) {
+    const items = all[cookieStoreId];
+    const index = items.findIndex((item) => item.id === shortcutId);
+    if (index !== -1) {
+      if (items[index].favIconUrl === favIconUrl) return true;
+      items[index] = { ...items[index], favIconUrl };
+      found = true;
+      break;
+    }
+  }
+
+  if (found && typeof browser !== 'undefined' && browser.storage?.local) {
+    await browser.storage.local.set({ [STORAGE_KEYS.SHORTCUTS]: all });
+  }
+
+  return found;
+}
+
 export async function deleteShortcut(
   cookieStoreId: string,
   id: string

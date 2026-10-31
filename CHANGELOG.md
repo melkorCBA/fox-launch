@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Automatic site favicon capture on shortcut dispatch and open-tab pre-population with graceful procedural avatar fallback (#15).
 - Conventional Commits v1.0.0 specification enforcement across agentic and collaborative workflows.
 - Automated PR title validation workflow (`.github/workflows/semantic-pr.yml`) using `action-semantic-pull-request`.
 - Project agent rule for Conventional Commits (`.agents/rules/conventional-commits.md`).

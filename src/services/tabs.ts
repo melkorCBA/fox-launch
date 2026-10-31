@@ -5,7 +5,8 @@
  */
 
 import type { DispatchOptions } from '../types';
-import { getSettings } from './storage';
+import { getSettings, updateShortcutFavicon } from './storage';
+import { createOneShotFaviconWatcher } from './favicon';
 
 /**
  * Dispatches a URL into a container tab.
@@ -37,6 +38,36 @@ export async function dispatchShortcut(
   }
 
   const createdTab = await browser.tabs.create(createProps);
+
+  // If shortcut does not have a cached favicon yet, watch this specific createdTab
+  if (createdTab?.id !== undefined && options?.shortcutId && !options.hasFavicon) {
+    const shortcutId = options.shortcutId;
+    const tabId = createdTab.id;
+
+    // 1. Notify background worker for survival across launcher tab closure
+    if (typeof browser !== 'undefined' && browser.runtime?.sendMessage) {
+      try {
+        browser.runtime.sendMessage({
+          type: 'WATCH_FAVICON',
+          shortcutId,
+          tabId,
+        }).catch(() => {
+          // Background script optional if not available
+        });
+      } catch {
+        // Safe ignore
+      }
+    }
+
+    // 2. Also attach local one-shot watcher
+    createOneShotFaviconWatcher(tabId, async (favIconUrl) => {
+      try {
+        await updateShortcutFavicon(shortcutId, favIconUrl);
+      } catch (err) {
+        console.error('[FoxLaunch] Error saving favicon from local watcher:', err);
+      }
+    });
+  }
 
   // If tab was opened in foreground (active: true), check tabBehavior setting
   // Middle-click / Ctrl-click (active: false) NEVER closes the launcher tab
