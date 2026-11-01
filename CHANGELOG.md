@@ -8,8 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-01
+
 ### Changed
-- AMO listing sync updates metadata only; promotional screenshots are uploaded manually after the sync.
+- AMO listing sync updates metadata only; promotional screenshots are uploaded manually after the sync (#37).
+
+### Fixed
+- Modal headers and action bars remain pinned within the viewport on short screens, with scrollable modal body content in shortcut dialogs, settings, and onboarding walkthrough (#35).
 
 ## [1.2.0] - 2026-11-01
 
