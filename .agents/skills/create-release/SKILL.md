@@ -90,6 +90,7 @@ Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozil
      ## [<new-version>] - YYYY-MM-DD
      ```
    - Leave an empty `## [Unreleased]` template above it for future work.
+   - For every user-facing feature recorded in the release notes or changelog, verify that the `README.md` Features list describes the current behavior and update it when needed. Do not release a user-facing feature without synchronizing this feature index.
 4. **Await Screenshot Agent & Check Listing Impact:**
    - Ensure the background `manage-amo-screenshots` agent has completed its execution.
    - Check if store listing or visual asset files changed relative to the previous release tag, comparing against the working tree (staged, unstaged, and untracked metadata files):
