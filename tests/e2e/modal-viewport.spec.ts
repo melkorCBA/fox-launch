@@ -92,4 +92,33 @@ test.describe('Modal viewport bounds', () => {
       });
     }
   }
+
+  for (const viewport of [
+    { width: 1280, height: 320 },
+    { width: 375, height: 360 },
+  ]) {
+    test(`onboarding walkthrough keeps header and actions visible at ${viewport.width}x${viewport.height}`, async ({ openFoxLaunch, page, mockHarness }) => {
+      await page.setViewportSize(viewport);
+      await openFoxLaunch({
+        settings: { ...DEFAULT_SETTINGS, firstRunDismissed: false },
+      });
+      const dialog = page.locator('#onboarding-root .onboarding-modal');
+      await expect(dialog).toBeVisible();
+      await expectViewportSafeLayout(dialog);
+      await expectInternalScrolling(dialog);
+
+      const nextBtn = loc.onboardingNextButton(page);
+      await expect(nextBtn).toBeVisible();
+      await nextBtn.click();
+      await expect(page.locator('#onboarding-root .step-indicator')).toHaveText('Step 2 of 4');
+      await expectViewportSafeLayout(dialog);
+
+      const dismissBtn = loc.onboardingDismissButton(page);
+      await expect(dismissBtn).toBeVisible();
+      await dismissBtn.click();
+      await expect(dialog).not.toBeVisible();
+      const storage = await mockHarness.getStorage();
+      expect(storage.foxlaunch_settings.firstRunDismissed).toBe(true);
+    });
+  }
 });
