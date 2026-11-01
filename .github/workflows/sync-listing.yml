@@ -8,9 +8,18 @@ on:
         type: boolean
         default: false
         required: false
+      skip_screenshots:
+        description: 'Skip screenshot uploads (sync metadata only)'
+        type: boolean
+        default: false
+        required: false
   workflow_call:
     inputs:
       dry_run:
+        type: boolean
+        default: false
+        required: false
+      skip_screenshots:
         type: boolean
         default: false
         required: false
@@ -46,4 +55,8 @@ jobs:
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             DRY_RUN_FLAG="--dry-run"
           fi
-          node scripts/sync-amo-listing.mjs $DRY_RUN_FLAG
+          SKIP_FLAG=""
+          if [ "${{ inputs.skip_screenshots }}" = "true" ]; then
+            SKIP_FLAG="--skip-screenshots"
+          fi
+          node scripts/sync-amo-listing.mjs $DRY_RUN_FLAG $SKIP_FLAG

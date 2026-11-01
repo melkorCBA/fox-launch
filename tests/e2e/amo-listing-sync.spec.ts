@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url';
 const root = process.cwd();
 const script = path.join(root, 'scripts/sync-amo-listing.mjs');
 
-function runSync(dryRun = false, failure = '', invalidImage = false) {
+function runSync(dryRun = false, failure = '', invalidImage = false, extraArgs: string[] = []) {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'foxlaunch-amo-'));
   try {
     fs.cpSync(path.join(root, 'metadata/amo'), path.join(cwd, 'metadata/amo'), { recursive: true });
@@ -77,7 +77,7 @@ function runSync(dryRun = false, failure = '', invalidImage = false) {
         return new Response(null, { status: options.method === 'DELETE' ? 204 : 200 });
       };
     `);
-    const result = spawnSync(process.execPath, ['--import', pathToFileURL(mockPath).href, script, ...(dryRun ? ['--dry-run'] : [])], {
+    const result = spawnSync(process.execPath, ['--import', pathToFileURL(mockPath).href, script, ...(dryRun ? ['--dry-run'] : []), ...extraArgs], {
       cwd,
       encoding: 'utf8',
       env: {
@@ -111,6 +111,13 @@ test.describe('AMO listing screenshot sync', () => {
     expect(result.stdout).toContain('foxlaunch-dark-2400x1800.png');
     expect(result.stdout).toContain('foxlaunch-light-2400x1800.png');
     expect(result.stdout).toContain('No changes sent to AMO');
+  });
+
+  test('syncs metadata without uploading screenshots when --skip-screenshots is passed', () => {
+    const result = runSync(false, '', false, ['--skip-screenshots']);
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.requests.map((r: { method: string }) => r.method)).toEqual(['GET', 'PATCH']);
+    expect(result.stdout).toContain('Skipping screenshot uploads');
   });
 
   test('rejects invalid screenshots before publishing even in a dry run', () => {

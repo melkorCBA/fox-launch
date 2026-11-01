@@ -4,6 +4,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 
 const isDryRun = process.argv.includes('--dry-run');
+const skipScreenshots = process.argv.includes('--skip-screenshots');
 
 function fail(msg) {
   console.error(`❌ [sync-amo-listing] ${msg}`);
@@ -235,25 +236,29 @@ try {
   if (!Array.isArray(addon.previews) || addon.previews.some(({ id }) => !Number.isInteger(id) || id <= 0)) {
     throw new Error('AMO returned an invalid previews list; refusing to replace screenshots.');
   }
-  for (const [position, { filename, image }] of screenshots.entries()) {
-    if (position > 0) await delay(1000);
-    console.log(`\n🚀 Uploading screenshot ${filename}...`);
-    const form = new FormData();
-    form.append('image', new Blob([image], { type: 'image/png' }), filename);
-    form.append('position', String(position));
-    const preview = JSON.parse(await request(`${url}previews/`, {
-      method: 'POST',
-      body: form,
-    }, `Upload screenshot ${filename}`));
-    if (!Number.isInteger(preview.id) || preview.id <= 0) {
-      throw new Error(`Upload screenshot ${filename}: AMO did not return a valid preview ID. Check the AMO listing before retrying.`);
+  if (!skipScreenshots) {
+    for (const [position, { filename, image }] of screenshots.entries()) {
+      if (position > 0) await delay(1000);
+      console.log(`\n🚀 Uploading screenshot ${filename}...`);
+      const form = new FormData();
+      form.append('image', new Blob([image], { type: 'image/png' }), filename);
+      form.append('position', String(position));
+      const preview = JSON.parse(await request(`${url}previews/`, {
+        method: 'POST',
+        body: form,
+      }, `Upload screenshot ${filename}`));
+      if (!Number.isInteger(preview.id) || preview.id <= 0) {
+        throw new Error(`Upload screenshot ${filename}: AMO did not return a valid preview ID. Check the AMO listing before retrying.`);
+      }
+      uploadedIds.push(preview.id);
     }
-    uploadedIds.push(preview.id);
-  }
 
-  for (const id of uploadedIds) {
-    console.log(`\n⏳ Verifying preview processing for ${id}...`);
-    await waitForPreviewProcessing(id);
+    for (const id of uploadedIds) {
+      console.log(`\n⏳ Verifying preview processing for ${id}...`);
+      await waitForPreviewProcessing(id);
+    }
+  } else {
+    console.log('\n⏩ Skipping screenshot uploads (--skip-screenshots flag passed)');
   }
 
   console.log(`\n🚀 Sending PATCH request to ${url}...`);
