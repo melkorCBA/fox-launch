@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Ko-fi support link in `README.md`, `CONTRIBUTING.md`, and GitHub sponsorship configuration (`.github/FUNDING.yml`).
+
 ## [1.2.1] - 2026-11-01
 
 ### Changed

@@ -95,6 +95,10 @@ To propose a change:
 
 The CI workflow runs typecheck, build, extension lint, Firefox E2E tests, and AMO metadata validation. The separate semantic PR check validates the pull request title.
 
+## Supporting FoxLaunch
+
+If you enjoy FoxLaunch and want to support the project financially, you can buy a coffee or sponsor ongoing maintenance on [Ko-fi](https://ko-fi.com/melkorcba). Every contribution helps keep the project independent, local-first, and privacy-focused!
+
 ## Releases and AMO Listing
 
 The AMO store listing is maintained as code under `metadata/amo/`. Changes there affect the public Firefox Add-ons listing; keep the copy accurate and synchronized with the extension’s features and permissions. Before editing these files, read [`.agents/rules/amo-listing.md`](.agents/rules/amo-listing.md), and include the listing impact in your pull request.

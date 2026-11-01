@@ -8,6 +8,7 @@
 ![CI status](https://img.shields.io/github/actions/workflow/status/melkorCBA/fox-launch/ci.yml?branch=main&label=CI&style=flat-square)
 ![License](https://img.shields.io/github/license/melkorCBA/fox-launch?style=flat-square)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-654FF0?style=flat-square&logo=firefox-browser)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/melkorcba)
 
 [![Get FoxLaunch for Firefox](https://img.shields.io/badge/Get%20FoxLaunch-for%20Firefox-FF7139?style=for-the-badge&logo=firefox-browser&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/foxlaunch/)
 
@@ -177,6 +178,14 @@ npm install @melkorcba/fox-launch
 pnpm add @melkorcba/fox-launch
 ```
 The package contains the production `dist/` extension bundle, `manifest.json`, and pre-packaged `.zip` archives.
+
+---
+
+## 💖 Support
+
+If FoxLaunch makes your Firefox container workflow smoother and you would like to support its ongoing development and maintenance, you can buy me a coffee on Ko-fi:
+
+[![Support on Ko-fi](https://img.shields.io/badge/Support%20on-Ko--fi-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/melkorcba)
 
 ---
 
