@@ -38,5 +38,10 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
     "web-ext": "^10.8.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "node-forge": "^1.4.2"
+    }
   }
 }
