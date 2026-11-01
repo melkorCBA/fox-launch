@@ -105,7 +105,7 @@ For the full release steps and approval gates, see [`.agents/skills/create-relea
 
 ### Screenshot updates
 
-The **Sync AMO Product Listing** workflow uploads the existing dark and light screenshots committed under `metadata/amo/screenshots/`, including when called by a release. Screenshot generation is handled separately by the release skill. The sync workflow does not capture or regenerate images, install Playwright, or alter local listing assets. Missing or invalid PNG screenshots stop syncing before any AMO requests.
+The **Sync AMO Product Listing** workflow syncs listing metadata only. Promotional screenshots remain in `metadata/amo/screenshots/` and are uploaded manually after the metadata sync finishes. Screenshot generation is handled separately by the release skill.
 
 For a local preview from the repository root:
 
@@ -113,8 +113,8 @@ For a local preview from the repository root:
 node scripts/sync-amo-listing.mjs --dry-run
 ```
 
-Review the images and listing diff before committing any `metadata/amo/` changes. The workflow retains the `production-amo` environment approval gate. Dispatch it with `dry_run: true` to validate the existing screenshots and print the proposed metadata and image filenames without modifying images, authenticating, or sending any requests to AMO.
+Review the listing diff before committing any `metadata/amo/` changes. The workflow retains the `production-amo` environment approval gate. Dispatch it with `dry_run: true` to validate the listing metadata and print the proposed payload without authenticating or sending any requests to AMO.
 
-Live sync uploads the two committed screenshots in dark/light order using AMO's multipart preview API, updates the listing metadata, then removes the previous previews so repeated syncs do not accumulate duplicates. The hero banner under `metadata/amo/assets/` is not a listing screenshot and is not uploaded. Upload or metadata failures leave previous previews in place and attempt to roll back new uploads. All API and cleanup failures fail the workflow explicitly; if rollback or old-preview cleanup fails, inspect the AMO listing before retrying. AMO does not provide an atomic listing-and-preview update.
+After a live metadata sync completes, sign in to the AMO Developer Hub, open FoxLaunch's listing screenshots, and mass-upload all promotional image files in `metadata/amo/screenshots/`. Review the existing previews and remove or replace any that are obsolete. The automated sync neither uploads screenshots nor changes existing previews. When a release sync runs, the release workflow adds this reminder to its run summary.
 
 These network operations are limited to publishing automation; the extension remains local-only.
