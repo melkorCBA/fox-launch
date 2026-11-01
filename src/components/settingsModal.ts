@@ -113,7 +113,7 @@ export function openSettingsModal(
 
     // --- Content Body ---
     const content = document.createElement('div');
-    content.className = 'modal-form';
+    content.className = 'modal-form modal-body';
 
     // Section 1: Tab Dispatch Behavior
     const tabSection = document.createElement('div');

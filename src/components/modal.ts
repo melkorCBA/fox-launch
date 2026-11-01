@@ -90,6 +90,9 @@ export function openShortcutModal(options: ShortcutModalOptions): void {
   form.className = 'modal-form';
   form.id = 'shortcut-form';
 
+  const body = document.createElement('div');
+  body.className = 'modal-body';
+
   // Title input
   const titleGroup = document.createElement('div');
   titleGroup.className = 'form-group';
@@ -108,7 +111,7 @@ export function openShortcutModal(options: ShortcutModalOptions): void {
   titleInput.autocomplete = 'off';
   titleGroup.appendChild(titleLabel);
   titleGroup.appendChild(titleInput);
-  form.appendChild(titleGroup);
+  body.appendChild(titleGroup);
 
   // URL input
   const urlGroup = document.createElement('div');
@@ -128,14 +131,15 @@ export function openShortcutModal(options: ShortcutModalOptions): void {
   urlInput.autocomplete = 'off';
   urlGroup.appendChild(urlLabel);
   urlGroup.appendChild(urlInput);
-  form.appendChild(urlGroup);
+  body.appendChild(urlGroup);
 
   // Validation Error Box
   const errorBox = document.createElement('div');
   errorBox.className = 'validation-error is-hidden';
   errorBox.setAttribute('data-testid', 'validation-error');
   errorBox.setAttribute('role', 'alert');
-  form.appendChild(errorBox);
+  body.appendChild(errorBox);
+  form.appendChild(body);
 
   // Footer Actions
   const footer = document.createElement('div');
@@ -245,4 +249,3 @@ export { openSettingsModal, type SettingsModalOptions } from './settingsModal';
 
 // Re-export onboarding overlay for backwards compatibility
 export { openOnboardingOverlay, type OnboardingOptions } from './onboarding';
-
