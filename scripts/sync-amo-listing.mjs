@@ -266,10 +266,9 @@ try {
   }, 'Update listing metadata');
   listingUpdated = true;
 
-  // Keep the old screenshots until every upload, processing, and the metadata update succeeds.
-  for (const { id } of addon.previews) {
-    await delay(1000);
-    await request(`${url}previews/${id}/`, { method: 'DELETE' }, `Delete old screenshot ${id}`);
+  // Retain existing previews to avoid AMO DELETE endpoint rate-limiting; prune manually in Developer Hub if needed.
+  if (addon.previews.length > 0) {
+    console.log(`\nℹ️ Retained ${addon.previews.length} existing screenshot preview(s). Remove obsolete screenshots manually in the AMO Developer Hub.`);
   }
 
   console.log(`✅ Successfully updated AMO store listing and ${screenshots.length} screenshots for ${addonId}!`);
@@ -283,5 +282,5 @@ try {
       }
     }
   }
-  fail(`Listing/screenshot sync failed: ${err.message}${listingUpdated ? '\nThe listing was updated, but old screenshot cleanup is incomplete. Check the AMO listing before retrying.' : ''}`);
+  fail(`Listing/screenshot sync failed: ${err.message}`);
 }

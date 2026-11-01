@@ -50,7 +50,6 @@ function runSync(dryRun = false, failure = '', invalidImage = false) {
         const failure = ${JSON.stringify(failure)};
         if ((failure === 'upload' && request.position === '1') ||
             (failure === 'metadata' && options.method === 'PATCH') ||
-            (failure === 'cleanup' && url.endsWith('/previews/11/')) ||
             (failure === 'rollback' && (request.position === '1' || url.endsWith('/previews/101/')))) {
           return new Response('simulated AMO failure', { status: 503 });
         }
@@ -121,12 +120,12 @@ test.describe('AMO listing screenshot sync', () => {
     expect(result.requests).toEqual([]);
   });
 
-  test('uploads multipart images in order before updating metadata and removing old previews', () => {
+  test('uploads multipart images in order before updating metadata and retaining existing previews', () => {
     const result = runSync();
     expect(result.status, result.stderr).toBe(0);
     expect(result.imagesUnchanged).toBe(true);
     expect(result.requests.map((request: { method: string }) => request.method))
-      .toEqual(['GET', 'POST', 'POST', 'GET', 'GET', 'PATCH', 'DELETE', 'DELETE']);
+      .toEqual(['GET', 'POST', 'POST', 'GET', 'GET', 'PATCH']);
     for (const [position, theme] of ['dark', 'light'].entries()) {
       const request = result.requests[position + 1];
       expect(request.url).toBe('https://addons.mozilla.org/api/v5/addons/addon/test%2Faddon/previews/');
@@ -138,8 +137,7 @@ test.describe('AMO listing screenshot sync', () => {
       expect(request.redirect).toBe('error');
     }
     expect(result.requests[5].payload.summary['en-US']).toBeTruthy();
-    expect(result.requests[6].url).toContain('/previews/11/');
-    expect(result.requests[7].url).toContain('/previews/12/');
+    expect(result.stdout).toContain('Retained 2 existing screenshot preview(s)');
   });
 
   test('upload failure preserves old previews and rolls back the first new upload', () => {
@@ -160,7 +158,7 @@ test.describe('AMO listing screenshot sync', () => {
       .toEqual(['101', '102']);
   });
 
-  for (const failure of ['network', 'invalid-id', 'processing', 'rollback', 'cleanup']) {
+  for (const failure of ['network', 'invalid-id', 'processing', 'rollback']) {
     test(`surfaces ${failure} failures clearly`, () => {
       const result = runSync(false, failure);
       expect(result.status).toBe(1);
@@ -169,10 +167,7 @@ test.describe('AMO listing screenshot sync', () => {
       if (failure === 'invalid-id') expect(result.stderr).toContain('valid preview ID');
       if (failure === 'processing') expect(result.stderr).toContain('processing timed out');
       if (failure === 'rollback') expect(result.stderr).toContain('Screenshot rollback failed');
-      if (failure === 'cleanup') {
-        expect(result.stderr).toContain('old screenshot cleanup is incomplete');
-        expect(result.requests.at(-1).url).toContain('/previews/11/');
-      }
+
     });
   }
 
