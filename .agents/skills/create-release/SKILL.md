@@ -90,6 +90,7 @@ Safe, automated workflow to prepare and publish a new FoxLaunch version to Mozil
      ## [<new-version>] - YYYY-MM-DD
      ```
    - Leave an empty `## [Unreleased]` template above it for future work.
+   - For every user-facing feature recorded in the release notes or changelog, verify that the `README.md` Features list describes the current behavior and update it when needed. Do not release a user-facing feature without synchronizing this feature index.
 4. **Await Screenshot Agent & Check Listing Impact:**
    - Ensure the background `manage-amo-screenshots` agent has completed its execution.
    - Check if store listing or visual asset files changed relative to the previous release tag, comparing against the working tree (staged, unstaged, and untracked metadata files):
@@ -123,6 +124,7 @@ pnpm run build
 pnpm run lint:ext
 node scripts/sync-amo-listing.mjs --dry-run
 ```
+The AMO dry run validates and prints listing metadata only; it does not inspect or upload screenshots.
 *If any check fails, stop immediately, report the failure, and do NOT tag or push.*
 
 ---
@@ -157,6 +159,7 @@ node scripts/sync-amo-listing.mjs --dry-run
 
 ### Step 7: Merge the Published Release Back into `main`
 1. Wait for the `.github/workflows/release.yml` run for `v<version>` to complete successfully, including any required deployment approvals. Do not merge back after a failed, cancelled, pending, or dry-run publication.
+   After the listing metadata sync completes, sign in to the AMO Developer Hub and mass-upload all promotional screenshots in `metadata/amo/screenshots/`. Review existing previews and remove or replace obsolete images as needed. The release workflow includes this manual step in its run summary.
 2. Verify the working tree is clean with `git status --short`. If there are uncommitted changes, stop and ask the user to commit or stash them first.
 3. Fetch the latest branches and the exact published tag (explicit refspecs also support single-branch clones):
    ```powershell

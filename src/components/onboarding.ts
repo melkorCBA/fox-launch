@@ -133,7 +133,7 @@ export function openOnboardingOverlay(
 
   // Header
   const header = document.createElement('div');
-  header.className = 'onboarding-header';
+  header.className = 'onboarding-header modal-header';
 
   const titleWrap = document.createElement('div');
   titleWrap.className = 'onboarding-title-wrap';
@@ -160,7 +160,7 @@ export function openOnboardingOverlay(
 
   // Content
   const content = document.createElement('div');
-  content.className = 'onboarding-content';
+  content.className = 'onboarding-content modal-body';
 
   const stepHeading = document.createElement('h4');
   stepHeading.id = 'onboarding-step-heading';
@@ -180,7 +180,7 @@ export function openOnboardingOverlay(
 
   // Footer
   const footer = document.createElement('div');
-  footer.className = 'onboarding-footer';
+  footer.className = 'onboarding-footer modal-footer';
 
   const progressWrap = document.createElement('div');
   progressWrap.className = 'onboarding-progress-wrap';
