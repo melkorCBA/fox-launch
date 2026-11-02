@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ko-fi support link in `README.md`, `CONTRIBUTING.md`, and GitHub sponsorship configuration (`.github/FUNDING.yml`).
 
 ### Changed
+- Redesigned Settings modal into a two-pane Preferences Studio with category navigation, live card preview, tactile container pills, and real-time match counter.
 - Refreshed geometry, neutral surface tiers, pill search bar, and elevation across shortcut cards, swimlanes, buttons, and modals to match Acorn specifications (#50).
 
 ## [1.2.1] - 2026-11-01
