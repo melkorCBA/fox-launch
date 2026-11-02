@@ -8,15 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-02
+
 ### Added
-- Integration with Firefox's official Acorn design system (Nova refresh), introducing a 3-tier future-proof token architecture (`src/styles/tokens/acorn.css`, `src/styles/tokens/brand.css`, `src/styles/themes.css`) (#50).
+- Integration with Firefox's official Acorn design system (Nova refresh), introducing a 3-tier future-proof token architecture (`src/styles/tokens/acorn.css`, `src/styles/tokens/brand.css`, `src/styles/themes.css`) (#50, #51).
 - Living Design System specification and upstream synchronization SOP in `docs/design-system.md` (#50).
 - Dedicated repository-level UI/UX skill `.agents/skills/acorn-ui` enforcing Acorn design system standards, component patterns, and token contracts (#50).
-- Ko-fi support link in `README.md`, `CONTRIBUTING.md`, and GitHub sponsorship configuration (`.github/FUNDING.yml`).
+- Ko-fi support link in `README.md`, `CONTRIBUTING.md`, and GitHub sponsorship configuration (`.github/FUNDING.yml`) (#47).
 
 ### Changed
-- Redesigned Settings modal into a two-pane Preferences Studio with category navigation, live card preview, tactile container pills, and real-time match counter.
-- Refreshed geometry, neutral surface tiers, pill search bar, and elevation across shortcut cards, swimlanes, buttons, and modals to match Acorn specifications (#50).
+- Redesigned Settings modal into a two-pane Preferences Studio with category navigation, live card preview, tactile container pills, and real-time match counter (#52).
+- Refreshed geometry, neutral surface tiers, pill search bar, and elevation across shortcut cards, swimlanes, buttons, and modals to match Acorn specifications (#50, #51).
+
+### Security
+- Security policy (`SECURITY.md`), Dependabot configuration, and pull request gating on GitHub Dependency Review scans (#38, #46).
 
 ## [1.2.1] - 2026-11-01
 

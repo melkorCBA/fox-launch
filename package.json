@@ -1,6 +1,6 @@
 {
   "name": "@melkorcba/fox-launch",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Container-aware New Tab workspace launchpad for Firefox Multi-Account Containers",
   "type": "module",
   "license": "MIT",

@@ -34,10 +34,11 @@ FoxLaunch organizes your shortcuts into dedicated **Firefox Multi-Account Contai
   - Delete with a 5-second countdown **Undo Toast**.
 - 🎨 **Firefox Acorn Design System**: Natively harmonized with Firefox's official Acorn design system (Nova refresh) and FoxLaunch brand identity, featuring soft geometry, layered neutral surfaces, and WCAG 2.1 AA accessibility. See the [Design System Specification](docs/design-system.md).
 - 🎨 **Local Favicons & Offline Procedural Avatars**: Captured site favicons are saved as local image data and displayed without loading remote images in the launcher. If no favicon is available, a letter avatar is generated locally as an SVG data URI with WCAG AA luminance contrast.
-- ⚙️ **Customizable Settings**:
+- ⚙️ **Preferences Studio**:
+  - Two-pane modal layout featuring category navigation, live shortcut card preview, tactile container pills, and real-time match counter.
   - Launcher tab behavior: `Keep launcher tab open` or `Close launcher tab on launch`.
   - Theme mode: `System Default`, `Dark`, or `Light`.
-  - Card size: `Small`, `Medium` (default), or `Large`, applied instantly across all swimlanes and saved locally.
+  - Card size: `Small`, `Medium` (default), or `Large`, previewed live and applied instantly across all swimlanes.
   - Container swimlane visibility: **Show all** (default), **Only show these**, or **Hide these**. Select containers and/or enter name patterns, one per line (e.g. `Work*`, `Dev-*`). Patterns match whole names case-insensitively; `*` matches any text and other characters are literal. Empty filters show no containers in “Only show these” and hide none in “Hide these”. The default context always remains visible. Filters save locally, apply to newly discovered containers, and never delete hidden shortcuts.
   - Factory reset with two-stage confirmation.
 - 🚶 **First-Run Onboarding**: Guided 4-step walkthrough overlay for new users with keyboard navigation and step indicators.
