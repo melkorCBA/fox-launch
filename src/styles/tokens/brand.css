@@ -1,0 +1,46 @@
+/**
+ * FoxLaunch Core — Official Brand Identity Tokens (The Soul)
+ * Master Specification: docs/brand/foxlaunch-brand-guide.md
+ * 
+ * Defines FoxLaunch's proprietary brand mark, flame gradients, and signature accents.
+ */
+
+:root {
+  /* ========================================================================
+     1. Signature Flame Gradients & Marks
+     ======================================================================== */
+  --brand-flame-gradient: linear-gradient(135deg, #FFB800 0%, #FF7139 45%, #C6007A 100%);
+  --brand-flame-hover-gradient: linear-gradient(135deg, #FFA000 0%, #E05620 45%, #A80066 100%);
+
+  /* ========================================================================
+     2. Brand Accents
+     ======================================================================== */
+  --fx-orange: #FF7139;           /* Primary brand accent */
+  --fx-orange-hover: #E05620;     /* Primary button hover */
+  --fx-violet: #8000FF;           /* Mozilla depth violet */
+  --fx-magenta: #FF2A85;          /* Vibrant magenta accent */
+  --fx-yellow: #FFD43B;           /* Amber highlight */
+
+  /* ========================================================================
+     3. Brand Guide Neutral Primitives (Backwards Compatibility & Spec)
+     ======================================================================== */
+  --fx-neutral-dark-0: #1C1B22;
+  --fx-neutral-dark-1: #2B2A33;
+  --fx-neutral-dark-2: #383742;
+  --fx-neutral-dark-text: #FBFBFE;
+  --fx-neutral-dark-muted: #A6A4B6;
+  --fx-neutral-dark-border: rgba(255, 255, 255, 0.10);
+
+  --fx-neutral-light-0: #F9F9FB;
+  --fx-neutral-light-1: #F0F0F4;
+  --fx-neutral-light-2: #E0E0E6;
+  --fx-neutral-light-ink: #15141A;
+  --fx-neutral-light-muted: #5B5B66;
+  --fx-neutral-light-border: rgba(0, 0, 0, 0.12);
+
+  /* ========================================================================
+     4. Procedural Avatar & Badge Geometry
+     ======================================================================== */
+  --badge-pill-height: 26px;
+  --badge-pill-padding: 0 10px;
+}

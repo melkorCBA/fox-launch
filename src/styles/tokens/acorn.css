@@ -1,0 +1,186 @@
+/**
+ * Firefox Acorn Design System — Upstream Foundation Tokens
+ * Official Acorn Specifications (Nova Refresh 2026 / Firefox 157+)
+ * 
+ * NOTE: This file is a vendor mirror of Mozilla's Acorn design tokens.
+ * Do NOT add FoxLaunch-specific component selectors here.
+ * When Firefox updates its design system, update this file.
+ */
+
+:root {
+  /* ========================================================================
+     1. Acorn Geometry & Radii Scale (Nova Soft Geometry)
+     ======================================================================== */
+  --acorn-radius-xs: 4px;
+  --acorn-radius-sm: 6px;
+  --acorn-radius-md: 10px;    /* Cards, Buttons, Form Inputs */
+  --acorn-radius-lg: 14px;    /* Swimlane Containers, Panels */
+  --acorn-radius-xl: 18px;    /* Modal Dialogs */
+  --acorn-radius-pill: 9999px;/* Search Bar, Badges, Tabs, Pills */
+
+  /* ========================================================================
+     2. Acorn Modular Spacing Scale (4px Base Unit)
+     ======================================================================== */
+  --acorn-space-1: 4px;
+  --acorn-space-2: 8px;
+  --acorn-space-3: 12px;
+  --acorn-space-4: 16px;
+  --acorn-space-5: 20px;
+  --acorn-space-6: 24px;
+  --acorn-space-8: 32px;
+  --acorn-space-10: 40px;
+
+  /* ========================================================================
+     3. Acorn Typography & Font Stacks (100% Offline, Strict CSP)
+     ======================================================================== */
+  --acorn-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --acorn-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --acorn-font-size-xs: 0.6875rem; /* 11px */
+  --acorn-font-size-sm: 0.8125rem; /* 13px */
+  --acorn-font-size-base: 0.9375rem; /* 15px */
+  --acorn-font-size-lg: 1.125rem;  /* 18px */
+  --acorn-font-size-xl: 1.375rem;  /* 22px */
+  --acorn-font-size-2xl: 1.75rem;  /* 28px */
+
+  --acorn-line-height-tight: 1.25;
+  --acorn-line-height-normal: 1.5;
+  --acorn-line-height-relaxed: 1.75;
+
+  /* ========================================================================
+     4. Acorn Transitions & Motion Easing
+     ======================================================================== */
+  --acorn-transition-instant: 75ms cubic-bezier(0, 0, 0.2, 1);
+  --acorn-transition-fast: 150ms cubic-bezier(0, 0, 0.2, 1);
+  --acorn-transition-normal: 250ms cubic-bezier(0, 0, 0.2, 1);
+
+  /* ========================================================================
+     5. Acorn Focus Indicator Standards
+     ======================================================================== */
+  --acorn-focus-outline-width: 2px;
+  --acorn-focus-outline-offset: 2px;
+
+  /* ========================================================================
+     6. Firefox Native Multi-Account Container Identity Colors
+     ======================================================================== */
+  --acorn-container-blue: #37adff;
+  --acorn-container-turquoise: #00c79a;
+  --acorn-container-green: #51cf66;
+  --acorn-container-yellow: #ffd43b;
+  --acorn-container-orange: #ff922b;
+  --acorn-container-red: #ff6b6b;
+  --acorn-container-pink: #f06595;
+  --acorn-container-purple: #cc5de8;
+  --acorn-container-toolbar: #808080;
+  --acorn-container-default: #808080;
+
+  /* ========================================================================
+     7. Acorn Modern Color Accent (Nova Violet / Blue)
+     ======================================================================== */
+  --acorn-color-accent-primary: #7542FF;
+  --acorn-color-accent-primary-hover: #5F2EEA;
+
+  /* ========================================================================
+     8. Acorn Dark Palette Foundations
+     ======================================================================== */
+  --acorn-dark-surface-canvas: #1C1B22;       /* Base Obsidian background */
+  --acorn-dark-surface-layer-1: #2B2A33;      /* Container swimlane & card base */
+  --acorn-dark-surface-layer-2: #383742;      /* Interactive hover surface */
+  --acorn-dark-surface-layer-3: #201F27;      /* Recessed / nested surface */
+  --acorn-dark-surface-dialog: #2B2A33;       /* Elevated dialog surface */
+  --acorn-dark-surface-overlay: rgba(28, 27, 34, 0.85); /* Frosted backdrop */
+
+  --acorn-dark-text-primary: #FBFBFE;
+  --acorn-dark-text-secondary: #CFCFD8;
+  --acorn-dark-text-muted: #A6A4B6;           /* WCAG AA 5.7:1 */
+  --acorn-dark-text-inverse: #15141A;
+
+  --acorn-dark-border-subtle: rgba(255, 255, 255, 0.10);
+  --acorn-dark-border-strong: rgba(255, 255, 255, 0.20);
+  --acorn-dark-focus-outline-color: #37adff;
+
+  --acorn-dark-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --acorn-dark-elevation-2: 0 4px 8px -1px rgba(0, 0, 0, 0.45);
+  --acorn-dark-elevation-3: 0 10px 18px -3px rgba(0, 0, 0, 0.55);
+  --acorn-dark-elevation-modal: 0 20px 30px -5px rgba(0, 0, 0, 0.70);
+
+  /* ========================================================================
+     9. Acorn Light Palette Foundations
+     ======================================================================== */
+  --acorn-light-surface-canvas: #F9F9FB;       /* Crisp clean canvas */
+  --acorn-light-surface-layer-1: #F0F0F4;      /* Elevated card & surface base */
+  --acorn-light-surface-layer-2: #E0E0E6;      /* Interactive hover surface */
+  --acorn-light-surface-layer-3: #F0F0F4;      /* Recessed / badge surface */
+  --acorn-light-surface-dialog: #FFFFFF;       /* Elevated dialog surface */
+  --acorn-light-surface-overlay: rgba(0, 0, 0, 0.45); /* Backdrop */
+
+  --acorn-light-text-primary: #15141A;
+  --acorn-light-text-secondary: #5B5B66;
+  --acorn-light-text-muted: #5B5B66;           /* WCAG AA 5.9:1 */
+  --acorn-light-text-inverse: #FFFFFF;
+
+  --acorn-light-border-subtle: rgba(0, 0, 0, 0.10);
+  --acorn-light-border-strong: #CFCFD8;
+  --acorn-light-focus-outline-color: #0060df;
+
+  --acorn-light-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --acorn-light-elevation-2: 0 4px 8px -1px rgba(0, 0, 0, 0.08);
+  --acorn-light-elevation-3: 0 10px 18px -3px rgba(0, 0, 0, 0.12);
+  --acorn-light-elevation-modal: 0 20px 30px -5px rgba(0, 0, 0, 0.18);
+}
+
+/* ==========================================================================
+   Acorn Dark Dynamic Foundations (prefers-color-scheme: dark)
+   ========================================================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --acorn-surface-canvas: var(--acorn-dark-surface-canvas);
+    --acorn-surface-layer-1: var(--acorn-dark-surface-layer-1);
+    --acorn-surface-layer-2: var(--acorn-dark-surface-layer-2);
+    --acorn-surface-layer-3: var(--acorn-dark-surface-layer-3);
+    --acorn-surface-dialog: var(--acorn-dark-surface-dialog);
+    --acorn-surface-overlay: var(--acorn-dark-surface-overlay);
+
+    --acorn-text-primary: var(--acorn-dark-text-primary);
+    --acorn-text-secondary: var(--acorn-dark-text-secondary);
+    --acorn-text-muted: var(--acorn-dark-text-muted);
+    --acorn-text-inverse: var(--acorn-dark-text-inverse);
+
+    --acorn-border-subtle: var(--acorn-dark-border-subtle);
+    --acorn-border-strong: var(--acorn-dark-border-strong);
+    --acorn-focus-outline-color: var(--acorn-dark-focus-outline-color);
+
+    --acorn-elevation-1: var(--acorn-dark-elevation-1);
+    --acorn-elevation-2: var(--acorn-dark-elevation-2);
+    --acorn-elevation-3: var(--acorn-dark-elevation-3);
+    --acorn-elevation-modal: var(--acorn-dark-elevation-modal);
+  }
+}
+
+/* ==========================================================================
+   Acorn Light Dynamic Foundations (prefers-color-scheme: light)
+   ========================================================================== */
+@media (prefers-color-scheme: light) {
+  :root {
+    --acorn-surface-canvas: var(--acorn-light-surface-canvas);
+    --acorn-surface-layer-1: var(--acorn-light-surface-layer-1);
+    --acorn-surface-layer-2: var(--acorn-light-surface-layer-2);
+    --acorn-surface-layer-3: var(--acorn-light-surface-layer-3);
+    --acorn-surface-dialog: var(--acorn-light-surface-dialog);
+    --acorn-surface-overlay: var(--acorn-light-surface-overlay);
+
+    --acorn-text-primary: var(--acorn-light-text-primary);
+    --acorn-text-secondary: var(--acorn-light-text-secondary);
+    --acorn-text-muted: var(--acorn-light-text-muted);
+    --acorn-text-inverse: var(--acorn-light-text-inverse);
+
+    --acorn-border-subtle: var(--acorn-light-border-subtle);
+    --acorn-border-strong: var(--acorn-light-border-strong);
+    --acorn-focus-outline-color: var(--acorn-light-focus-outline-color);
+
+    --acorn-elevation-1: var(--acorn-light-elevation-1);
+    --acorn-elevation-2: var(--acorn-light-elevation-2);
+    --acorn-elevation-3: var(--acorn-light-elevation-3);
+    --acorn-elevation-modal: var(--acorn-light-elevation-modal);
+  }
+}

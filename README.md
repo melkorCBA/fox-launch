@@ -32,6 +32,7 @@ FoxLaunch organizes your shortcuts into dedicated **Firefox Multi-Account Contai
   - Add and edit shortcuts with container assignment and URL validation (`https://`, `http://`, `about:`).
   - Drag-and-drop intra-swimlane reordering.
   - Delete with a 5-second countdown **Undo Toast**.
+- 🎨 **Firefox Acorn Design System**: Natively harmonized with Firefox's official Acorn design system (Nova refresh) and FoxLaunch brand identity, featuring soft geometry, layered neutral surfaces, and WCAG 2.1 AA accessibility. See the [Design System Specification](docs/design-system.md).
 - 🎨 **Local Favicons & Offline Procedural Avatars**: Captured site favicons are saved as local image data and displayed without loading remote images in the launcher. If no favicon is available, a letter avatar is generated locally as an SVG data URI with WCAG AA luminance contrast.
 - ⚙️ **Customizable Settings**:
   - Launcher tab behavior: `Keep launcher tab open` or `Close launcher tab on launch`.
