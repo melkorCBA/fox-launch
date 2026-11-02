@@ -277,10 +277,11 @@
   font-weight: 500;
   cursor: pointer;
   border: none;
+  border-left: 3px solid transparent;
   background: transparent;
   width: 100%;
   text-align: left;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
 }
 
 .studio-nav-item:hover {
@@ -290,9 +291,14 @@
 
 .studio-nav-item.active {
   background: var(--bg-surface);
-  color: var(--fx-orange);
+  color: var(--text-primary);
   font-weight: 600;
+  border-left-color: var(--fx-orange);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.studio-nav-item.active svg {
+  color: var(--fx-orange);
 }
 
 .studio-nav-item svg {
@@ -420,7 +426,7 @@
 .segment-option:has(input[type="radio"]:checked),
 .segment-option.is-checked {
   background: var(--bg-surface);
-  color: var(--fx-orange);
+  color: var(--text-primary);
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
@@ -533,6 +539,15 @@
   user-select: none;
   transition: all var(--transition-fast);
   position: relative;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.studio-pill-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .studio-pill-badge input[type="checkbox"] {
@@ -579,6 +594,7 @@
   transition: all var(--transition-instant);
   margin-left: 2px;
   color: var(--pill-color, var(--fx-orange));
+  flex-shrink: 0;
 }
 
 .studio-pill-badge:has(input[type="checkbox"]:checked) .studio-pill-check,
@@ -592,9 +608,9 @@
   align-items: center;
   font-size: var(--text-xs);
   font-weight: 600;
-  color: var(--fx-orange);
-  background: rgba(255, 113, 57, 0.12);
-  border: 1px solid rgba(255, 113, 57, 0.25);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   padding: 2px 8px;
   border-radius: var(--radius-pill);
   transition: all var(--transition-fast);

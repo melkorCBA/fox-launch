@@ -498,6 +498,9 @@ export function openSettingsModal(
     const matchBadge = document.createElement('span');
     matchBadge.id = 'container-match-count';
     matchBadge.className = 'studio-count-badge';
+    matchBadge.setAttribute('role', 'status');
+    matchBadge.setAttribute('aria-live', 'polite');
+    matchBadge.setAttribute('aria-atomic', 'true');
     visibilityHeader.append(visibilityTitle, matchBadge);
     visibilitySection.appendChild(visibilityHeader);
 
@@ -521,8 +524,6 @@ export function openSettingsModal(
     const updateMatchBadge = () => {
       if (visibility.mode === 'all') {
         matchBadge.textContent = `All ${nonDefaultContainers.length} containers visible`;
-        matchBadge.style.color = 'var(--text-muted)';
-        matchBadge.style.background = 'var(--bg-secondary)';
         return;
       }
 
@@ -536,12 +537,9 @@ export function openSettingsModal(
       });
 
       const count = matched.size;
-      matchBadge.style.background = 'rgba(255, 113, 57, 0.12)';
       if (visibility.mode === 'only') {
-        matchBadge.style.color = 'var(--fx-orange)';
         matchBadge.textContent = `Matching ${count} of ${nonDefaultContainers.length} container${nonDefaultContainers.length === 1 ? '' : 's'}`;
       } else {
-        matchBadge.style.color = '#ff6b6b';
         matchBadge.textContent = `Hiding ${count} of ${nonDefaultContainers.length} container${nonDefaultContainers.length === 1 ? '' : 's'}`;
       }
     };
@@ -616,6 +614,7 @@ export function openSettingsModal(
       dot.style.background = container.colorCode || 'var(--fx-orange)';
 
       const name = document.createElement('span');
+      name.className = 'studio-pill-name';
       name.textContent = container.name;
 
       const check = document.createElement('span');
