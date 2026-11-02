@@ -184,6 +184,7 @@ test.describe('Tier 4: Real-World Acceptance Scenarios', () => {
     // 2. Change theme to dark via settings
     await loc.settingsButton(page).click();
     await loc.settingsThemeOption(page, 'dark').click();
+    await loc.settingsTab(page, 'behavior').click();
     await loc.settingsTabBehaviorKeep(page).click();
     await page.keyboard.press('Escape');
 

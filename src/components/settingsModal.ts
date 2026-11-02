@@ -21,6 +21,7 @@ import { matchesContainerName } from '../utils/containerVisibility';
 export interface SettingsModalOptions {
   currentSettings?: FoxLaunchSettings;
   triggerElement?: HTMLElement | null;
+  initialTab?: 'appearance' | 'behavior' | 'containers' | 'data';
   onSettingsChanged?: (updated: FoxLaunchSettings) => void;
   onResetDefaults?: () => Promise<void> | void;
 }
@@ -115,12 +116,14 @@ export function openSettingsModal(
   let onResetDefaults: (() => Promise<void> | void) | undefined = arg2;
   let onSettingsChanged: ((updated: FoxLaunchSettings) => void) | undefined;
   let initialSettings: FoxLaunchSettings | undefined;
+  let initialTab: 'appearance' | 'behavior' | 'containers' | 'data' = 'appearance';
 
   if (arg1 && 'nodeType' in arg1) {
     triggerElement = arg1 as HTMLElement;
   } else if (arg1 && typeof arg1 === 'object') {
     const opts = arg1 as SettingsModalOptions;
     triggerElement = opts.triggerElement ?? null;
+    initialTab = opts.initialTab ?? 'appearance';
     onResetDefaults = opts.onResetDefaults ?? arg2;
     onSettingsChanged = opts.onSettingsChanged;
     initialSettings = opts.currentSettings;
@@ -171,47 +174,70 @@ export function openSettingsModal(
     // 1. Sidebar Navigation
     const sidebar = document.createElement('nav');
     sidebar.className = 'studio-sidebar';
+    sidebar.setAttribute('role', 'tablist');
+    sidebar.setAttribute('aria-orientation', 'vertical');
     sidebar.setAttribute('aria-label', 'Settings navigation');
 
     interface SidebarItem {
       id: string;
+      testId: string;
       label: string;
       icon: SVGSVGElement;
       sectionId: string;
     }
 
     const navItems: SidebarItem[] = [
-      { id: 'nav-appearance', label: 'Appearance', icon: createAppearanceSvg(), sectionId: 'section-appearance' },
-      { id: 'nav-behavior', label: 'Behavior', icon: createBehaviorSvg(), sectionId: 'section-behavior' },
-      { id: 'nav-containers', label: 'Containers', icon: createContainersSvg(), sectionId: 'section-containers' },
-      { id: 'nav-data', label: 'Data & Reset', icon: createDataSvg(), sectionId: 'section-data' },
+      { id: 'tab-appearance', testId: 'nav-tab-appearance', label: 'Appearance', icon: createAppearanceSvg(), sectionId: 'section-appearance' },
+      { id: 'tab-behavior', testId: 'nav-tab-behavior', label: 'Behavior', icon: createBehaviorSvg(), sectionId: 'section-behavior' },
+      { id: 'tab-containers', testId: 'nav-tab-containers', label: 'Containers', icon: createContainersSvg(), sectionId: 'section-containers' },
+      { id: 'tab-data', testId: 'nav-tab-data', label: 'Data & Reset', icon: createDataSvg(), sectionId: 'section-data' },
     ];
 
     const navButtons: HTMLButtonElement[] = [];
 
-    const updateActiveNav = (activeId: string) => {
+    // Forward declare sections for tab switching
+    let appearanceSection: HTMLElement;
+    let behaviorSection: HTMLElement;
+    let visibilitySection: HTMLElement;
+    let resetSection: HTMLElement;
+
+    const switchTab = (targetSectionId: string) => {
       navButtons.forEach((btn) => {
-        const isCurrent = btn.getAttribute('data-target-section') === activeId;
+        const isCurrent = btn.getAttribute('data-target-section') === targetSectionId;
         btn.classList.toggle('active', isCurrent);
-        btn.setAttribute('aria-current', isCurrent ? 'true' : 'false');
+        btn.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+        btn.setAttribute('tabindex', isCurrent ? '0' : '-1');
+      });
+
+      const sections = [appearanceSection, behaviorSection, visibilitySection, resetSection];
+      sections.forEach((sec) => {
+        if (!sec) return;
+        const isActive = sec.id === targetSectionId;
+        sec.classList.toggle('active', isActive);
+        if (isActive) {
+          sec.removeAttribute('hidden');
+        } else {
+          sec.setAttribute('hidden', '');
+        }
       });
     };
 
-    navItems.forEach((item, index) => {
+    navItems.forEach((item) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = `studio-nav-item ${index === 0 ? 'active' : ''}`;
+      btn.id = item.id;
+      btn.className = 'studio-nav-item';
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('data-testid', item.testId);
       btn.setAttribute('data-target-section', item.sectionId);
-      btn.setAttribute('aria-current', index === 0 ? 'true' : 'false');
+      btn.setAttribute('aria-controls', item.sectionId);
+      btn.setAttribute('aria-selected', 'false');
+      btn.setAttribute('tabindex', '-1');
       btn.appendChild(item.icon);
       btn.appendChild(document.createTextNode(item.label));
 
       btn.addEventListener('click', () => {
-        updateActiveNav(item.sectionId);
-        const section = document.getElementById(item.sectionId);
-        if (section) {
-          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        switchTab(item.sectionId);
       });
 
       navButtons.push(btn);
@@ -225,9 +251,12 @@ export function openSettingsModal(
     content.className = 'studio-content';
 
     // --- Section 1: Appearance (Theme & Card Density & Live Preview) ---
-    const appearanceSection = document.createElement('section');
+    appearanceSection = document.createElement('section');
     appearanceSection.id = 'section-appearance';
     appearanceSection.className = 'studio-section';
+    appearanceSection.setAttribute('role', 'tabpanel');
+    appearanceSection.setAttribute('aria-labelledby', 'tab-appearance');
+    appearanceSection.setAttribute('tabindex', '0');
 
     const appearanceHeader = document.createElement('div');
     appearanceHeader.className = 'studio-section-header';
@@ -390,9 +419,12 @@ export function openSettingsModal(
     content.appendChild(appearanceSection);
 
     // --- Section 2: Behavior & Tab Dispatch ---
-    const behaviorSection = document.createElement('section');
+    behaviorSection = document.createElement('section');
     behaviorSection.id = 'section-behavior';
     behaviorSection.className = 'studio-section';
+    behaviorSection.setAttribute('role', 'tabpanel');
+    behaviorSection.setAttribute('aria-labelledby', 'tab-behavior');
+    behaviorSection.setAttribute('tabindex', '0');
 
     const behaviorHeader = document.createElement('div');
     behaviorHeader.className = 'studio-section-header';
@@ -449,9 +481,12 @@ export function openSettingsModal(
     content.appendChild(behaviorSection);
 
     // --- Section 3: Containers & Wildcard Visibility ---
-    const visibilitySection = document.createElement('section');
+    visibilitySection = document.createElement('section');
     visibilitySection.id = 'section-containers';
     visibilitySection.className = 'studio-section';
+    visibilitySection.setAttribute('role', 'tabpanel');
+    visibilitySection.setAttribute('aria-labelledby', 'tab-containers');
+    visibilitySection.setAttribute('tabindex', '0');
 
     const visibilityHeader = document.createElement('div');
     visibilityHeader.className = 'studio-section-header';
@@ -626,9 +661,12 @@ export function openSettingsModal(
     updateMatchBadge();
 
     // --- Section 4: Data Management & Reset to Defaults ---
-    const resetSection = document.createElement('section');
+    resetSection = document.createElement('section');
     resetSection.id = 'section-data';
     resetSection.className = 'studio-section settings-reset-section';
+    resetSection.setAttribute('role', 'tabpanel');
+    resetSection.setAttribute('aria-labelledby', 'tab-data');
+    resetSection.setAttribute('tabindex', '0');
 
     const resetHeader = document.createElement('div');
     resetHeader.className = 'studio-section-header';
@@ -706,25 +744,10 @@ export function openSettingsModal(
     resetSection.appendChild(resetControls);
     content.appendChild(resetSection);
 
-    // Scroll listener on body to update active sidebar navigation
     body.appendChild(content);
 
-    body.addEventListener('scroll', () => {
-      const scrollPos = body.scrollTop + 60;
-      const sections = [
-        { id: 'section-appearance', top: appearanceSection.offsetTop },
-        { id: 'section-behavior', top: behaviorSection.offsetTop },
-        { id: 'section-containers', top: visibilitySection.offsetTop },
-        { id: 'section-data', top: resetSection.offsetTop },
-      ];
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        if (scrollPos >= sections[i].top) {
-          updateActiveNav(sections[i].id);
-          break;
-        }
-      }
-    });
+    // Activate initial tab
+    switchTab(`section-${initialTab}`);
 
     // --- Footer Actions ---
     const footer = document.createElement('div');

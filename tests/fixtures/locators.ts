@@ -116,6 +116,9 @@ export const FoxLaunchLocators = {
   settingsModal: (page: Page): Locator =>
     page.locator('#modal-root .settings-modal, [data-testid="settings-modal"], .settings-dialog'),
 
+  settingsTab: (page: Page, tab: 'appearance' | 'behavior' | 'containers' | 'data'): Locator =>
+    page.locator(`[data-testid="nav-tab-${tab}"]`),
+
   settingsTabBehaviorClose: (page: Page): Locator =>
     page.locator('input[name="tabBehavior"][value="close"], [data-setting-val="close"]'),
 

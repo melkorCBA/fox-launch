@@ -62,6 +62,7 @@ test.describe('Card size settings', () => {
     await openFoxLaunch({ settings: { ...DEFAULT_SETTINGS, cardSize: 'small' }, shortcuts: SAMPLE_SHORTCUTS });
     await expect(page.locator('html')).toHaveAttribute('data-card-size', 'small');
     await page.locator('#settings-btn').click();
+    await page.locator('[data-testid="nav-tab-data"]').click();
     await page.getByTestId('btn-reset-defaults').click();
     await page.getByTestId('btn-confirm-reset').click();
     await expect(page.locator('html')).toHaveAttribute('data-card-size', 'medium');

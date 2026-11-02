@@ -359,6 +359,7 @@ test.describe('Adversarial M4-2: 3. Focus Trapping & Accessibility (WCAG 2.1 AA)
     await loc.settingsButton(page).click();
     const modal = loc.settingsModal(page);
     await expect(modal).toBeVisible();
+    await loc.settingsTab(page, 'data').click();
 
     const resetBtn = page.locator('#modal-root [data-action="reset-defaults"]');
     await resetBtn.click();
