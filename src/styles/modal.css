@@ -1,5 +1,6 @@
 /**
  * FoxLaunch — Modal Dialog & Toast Notification Styling
+ * Aligned with Firefox Acorn Design System (Nova Refresh)
  */
 
 /* Modal Backdrop */
@@ -11,7 +12,7 @@
   align-items: center;
   justify-content: center;
   background-color: var(--bg-overlay);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(8px);
   padding: var(--space-4);
   animation: modalFadeIn var(--transition-fast);
 }
@@ -24,7 +25,7 @@
   overflow: hidden;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-dialog);
   box-shadow: var(--shadow-modal);
   padding: var(--space-6);
   display: flex;
@@ -83,7 +84,7 @@
   color: var(--text-primary);
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-button);
   outline: none;
   transition: border-color var(--transition-fast);
 }
@@ -122,15 +123,19 @@
   font-size: var(--text-sm);
   font-weight: 600;
   background: var(--fx-orange);
-  color: var(--fx-neutral-light-ink);
+  color: var(--fx-neutral-light-ink, #15141A);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-button);
   cursor: pointer;
-  transition: background-color var(--transition-fast), opacity var(--transition-fast);
+  transition: background-color var(--transition-fast), transform var(--transition-instant);
 }
 
 .btn-primary:hover {
   background: var(--fx-orange-hover);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
 }
 
 .btn-secondary {
@@ -141,13 +146,17 @@
   background: var(--bg-tertiary);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-button);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), transform var(--transition-instant);
 }
 
 .btn-secondary:hover {
   background: var(--bg-secondary);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
 }
 
 /* Toast Notification */
@@ -163,7 +172,7 @@
   background: var(--bg-surface);
   color: var(--text-primary);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-lg);
   animation: toastFadeIn var(--transition-fast);
 }
@@ -193,7 +202,7 @@
   max-width: 460px;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-dialog);
   box-shadow: var(--shadow-modal);
   padding: var(--space-6);
   display: flex;
@@ -242,7 +251,7 @@
   min-width: 0;
   padding: var(--space-3);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-card);
 }
 
 .settings-container-filters:disabled {
@@ -277,7 +286,7 @@
   align-items: center;
   justify-content: center;
   background-color: var(--bg-overlay);
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(8px);
   padding: var(--space-4);
   animation: modalFadeIn var(--transition-fast);
 }
@@ -287,7 +296,7 @@
   max-width: 480px;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-dialog);
   box-shadow: var(--shadow-modal);
   padding: var(--space-6);
   display: flex;
@@ -351,14 +360,18 @@
   background: rgba(255, 107, 107, 0.12);
   color: var(--container-red);
   border: 1px solid rgba(255, 107, 107, 0.35);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-button);
   cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast);
+  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-instant);
 }
 
 .btn-danger:hover {
   background: rgba(255, 107, 107, 0.22);
   border-color: var(--container-red);
+}
+
+.btn-danger:active {
+  transform: scale(0.98);
 }
 
 .btn-danger:focus-visible {
@@ -385,7 +398,7 @@
   padding: var(--space-3);
   background: rgba(255, 107, 107, 0.08);
   border: 1px solid rgba(255, 107, 107, 0.25);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-card);
 }
 
 .reset-confirm-panel.is-hidden {

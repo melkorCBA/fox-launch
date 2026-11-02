@@ -1,5 +1,6 @@
 /**
  * FoxLaunch — Base Styles, Reset, Grid & Layout
+ * Aligned with Firefox Acorn Design System (Nova Refresh)
  */
 
 /* Modern CSS Reset */
@@ -83,7 +84,7 @@ body {
   color: var(--text-primary);
 }
 
-/* Search Bar & Hotkey */
+/* Search Bar & Hotkey (Nova Pill Search Geometry) */
 .header-search {
   flex: 1;
   max-width: 520px;
@@ -105,7 +106,7 @@ body {
   color: var(--text-primary);
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-search);
   box-shadow: var(--shadow-sm);
   outline: none;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
@@ -152,17 +153,21 @@ body {
   width: 36px;
   height: 36px;
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-button);
   background: var(--bg-secondary);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-instant);
 }
 
 .btn-icon:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
   border-color: var(--border-strong);
+}
+
+.btn-icon:active {
+  transform: scale(0.96);
 }
 
 /* Swimlanes Container Stack */

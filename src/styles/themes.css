@@ -1,86 +1,83 @@
 /**
- * FoxLaunch — Design Tokens & Theme System
+ * FoxLaunch — Design Tokens & Semantic Adapter
  * Strict CSP compliant: Zero external font imports or remote assets.
- * Master Specification: docs/brand/foxlaunch-brand-guide.md
+ * 
+ * Bridges Upstream Acorn Tokens (Substrate) + FoxLaunch Brand Tokens (Soul).
+ * Master Specification: docs/design-system.md
  */
+
+@import "./tokens/acorn.css";
+@import "./tokens/brand.css";
 
 :root {
   /* ========================================================================
-     Brand Identity Primitives (Metropolis / Acorn Design Tokens)
-     Upstream primitives that change infrequently.
+     1. Semantic Typography (Mapped to Acorn Standards)
      ======================================================================== */
-  --fx-orange: #FF7139;
-  --fx-orange-hover: #E05620;
-  --fx-violet: #8000FF;
-  --fx-magenta: #FF2A85;
-  --fx-yellow: #FFD43B;
+  --font-sans: var(--acorn-font-sans);
+  --font-mono: var(--acorn-font-mono);
 
-  /* Acorn Dark Neutral Primitives */
-  --fx-neutral-dark-0: #1C1B22; /* Obsidian Chrome base */
-  --fx-neutral-dark-1: #2B2A33; /* Elevated Surface */
-  --fx-neutral-dark-2: #383742; /* Hover Surface */
-  --fx-neutral-dark-text: #FBFBFE; /* Pure White / Ink */
-  --fx-neutral-dark-muted: #A6A4B6; /* Slate Lavender (WCAG AA compliant: 5.7:1) */
-  --fx-neutral-dark-border: rgba(255, 255, 255, 0.10);
+  --text-xs: var(--acorn-font-size-xs);
+  --text-sm: var(--acorn-font-size-sm);
+  --text-base: var(--acorn-font-size-base);
+  --text-lg: var(--acorn-font-size-lg);
+  --text-xl: var(--acorn-font-size-xl);
+  --text-2xl: var(--acorn-font-size-2xl);
 
-  /* Acorn Light Neutral Primitives */
-  --fx-neutral-light-0: #F9F9FB; /* Clean Crisp Light base */
-  --fx-neutral-light-1: #F0F0F4; /* Light Surface */
-  --fx-neutral-light-2: #E0E0E6; /* Light Hover Surface */
-  --fx-neutral-light-ink: #15141A; /* Ink primary text */
-  --fx-neutral-light-muted: #5B5B66; /* Graphite muted text (WCAG AA compliant: 5.9:1) */
-  --fx-neutral-light-border: rgba(0, 0, 0, 0.12);
+  --leading-tight: var(--acorn-line-height-tight);
+  --leading-normal: var(--acorn-line-height-normal);
+  --leading-relaxed: var(--acorn-line-height-relaxed);
 
-  /* Firefox Native Container Identity Colors */
-  --container-blue: #37adff;
-  --container-turquoise: #00c79a;
-  --container-green: #51cf66;
-  --container-yellow: #ffd43b;
-  --container-orange: #ff922b;
-  --container-red: #ff6b6b;
-  --container-pink: #f06595;
-  --container-purple: #cc5de8;
-  --container-toolbar: #808080;
-  --container-default: #808080;
+  /* ========================================================================
+     2. Semantic Spacing (Mapped to Acorn 4px Scale)
+     ======================================================================== */
+  --space-1: var(--acorn-space-1);
+  --space-2: var(--acorn-space-2);
+  --space-3: var(--acorn-space-3);
+  --space-4: var(--acorn-space-4);
+  --space-5: var(--acorn-space-5);
+  --space-6: var(--acorn-space-6);
+  --space-8: var(--acorn-space-8);
+  --space-10: var(--acorn-space-10);
 
-  /* Typography Stack (System fonts for sub-10ms cold render, zero network requests) */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  /* ========================================================================
+     3. Semantic Geometry & Radii (Nova Soft Radii)
+     ======================================================================== */
+  --radius-xs: var(--acorn-radius-xs);
+  --radius-sm: var(--acorn-radius-sm);
+  --radius-md: var(--acorn-radius-md);
+  --radius-lg: var(--acorn-radius-lg);
+  --radius-xl: var(--acorn-radius-xl);
+  --radius-pill: var(--acorn-radius-pill);
+  --radius-full: var(--acorn-radius-pill);
 
-  /* Font Sizes */
-  --text-xs: 0.6875rem; /* 11px */
-  --text-sm: 0.8125rem; /* 13px */
-  --text-base: 0.9375rem; /* 15px */
-  --text-lg: 1.125rem; /* 18px */
-  --text-xl: 1.375rem; /* 22px */
-  --text-2xl: 1.75rem; /* 28px */
+  /* Functional Component Radii */
+  --radius-card: var(--acorn-radius-md);       /* 10px */
+  --radius-swimlane: var(--acorn-radius-lg);   /* 14px */
+  --radius-dialog: var(--acorn-radius-xl);     /* 18px */
+  --radius-button: var(--acorn-radius-md);     /* 10px */
+  --radius-badge: var(--acorn-radius-pill);    /* 9999px */
+  --radius-search: var(--acorn-radius-pill);   /* 9999px */
 
-  /* Line Heights */
-  --leading-tight: 1.25;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.75;
+  /* ========================================================================
+     4. Transitions & Motion
+     ======================================================================== */
+  --transition-instant: var(--acorn-transition-instant);
+  --transition-fast: var(--acorn-transition-fast);
+  --transition-normal: var(--acorn-transition-normal);
 
-  /* Spacing Scale */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-
-  /* Border Radii */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
-
-  /* Transitions */
-  --transition-instant: 75ms ease;
-  --transition-fast: 150ms ease;
-  --transition-normal: 250ms ease;
+  /* ========================================================================
+     5. Firefox Native Container Identity Mappings
+     ======================================================================== */
+  --container-blue: var(--acorn-container-blue);
+  --container-turquoise: var(--acorn-container-turquoise);
+  --container-green: var(--acorn-container-green);
+  --container-yellow: var(--acorn-container-yellow);
+  --container-orange: var(--acorn-container-orange);
+  --container-red: var(--acorn-container-red);
+  --container-pink: var(--acorn-container-pink);
+  --container-purple: var(--acorn-container-purple);
+  --container-toolbar: var(--acorn-container-toolbar);
+  --container-default: var(--acorn-container-default);
 }
 
 /* ==========================================================================
@@ -88,27 +85,27 @@
    ========================================================================== */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-primary: var(--fx-neutral-dark-0);
-    --bg-secondary: var(--fx-neutral-dark-1);
-    --bg-tertiary: #201F27;
-    --bg-surface: var(--fx-neutral-dark-1);
-    --bg-surface-hover: var(--fx-neutral-dark-2);
-    --bg-overlay: rgba(28, 27, 34, 0.85);
+    --bg-primary: var(--acorn-surface-canvas);
+    --bg-secondary: var(--acorn-surface-layer-1);
+    --bg-tertiary: var(--acorn-surface-layer-3);
+    --bg-surface: var(--acorn-surface-layer-1);
+    --bg-surface-hover: var(--acorn-surface-layer-2);
+    --bg-overlay: var(--acorn-surface-overlay);
 
-    --text-primary: var(--fx-neutral-dark-text);
-    --text-secondary: #CFCFD8;
-    --text-muted: var(--fx-neutral-dark-muted);
-    --text-inverse: var(--fx-neutral-light-ink);
+    --text-primary: var(--acorn-text-primary);
+    --text-secondary: var(--acorn-text-secondary);
+    --text-muted: var(--acorn-text-muted);
+    --text-inverse: var(--acorn-text-inverse);
 
-    --border-subtle: var(--fx-neutral-dark-border);
-    --border-strong: rgba(255, 255, 255, 0.20);
-    --border-focus: #37adff;
-    --focus-ring-active: #37adff;
+    --border-subtle: var(--acorn-border-subtle);
+    --border-strong: var(--acorn-border-strong);
+    --border-focus: var(--acorn-focus-outline-color);
+    --focus-ring-active: var(--acorn-focus-outline-color);
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55);
-    --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+    --shadow-sm: var(--acorn-elevation-1);
+    --shadow-md: var(--acorn-elevation-2);
+    --shadow-lg: var(--acorn-elevation-3);
+    --shadow-modal: var(--acorn-elevation-modal);
   }
 }
 
@@ -117,27 +114,27 @@
    ========================================================================== */
 @media (prefers-color-scheme: light) {
   :root {
-    --bg-primary: var(--fx-neutral-light-0);
+    --bg-primary: var(--acorn-surface-canvas);
     --bg-secondary: #ffffff;
-    --bg-tertiary: var(--fx-neutral-light-1);
-    --bg-surface: var(--fx-neutral-light-1);
-    --bg-surface-hover: var(--fx-neutral-light-2);
-    --bg-overlay: rgba(0, 0, 0, 0.45);
+    --bg-tertiary: var(--acorn-surface-layer-3);
+    --bg-surface: var(--acorn-surface-layer-1);
+    --bg-surface-hover: var(--acorn-surface-layer-2);
+    --bg-overlay: var(--acorn-surface-overlay);
 
-    --text-primary: var(--fx-neutral-light-ink);
-    --text-secondary: var(--fx-neutral-light-muted);
-    --text-muted: var(--fx-neutral-light-muted);
-    --text-inverse: #ffffff;
+    --text-primary: var(--acorn-text-primary);
+    --text-secondary: var(--acorn-text-secondary);
+    --text-muted: var(--acorn-text-muted);
+    --text-inverse: var(--acorn-text-inverse);
 
-    --border-subtle: var(--fx-neutral-light-border);
-    --border-strong: #cfcfd8;
-    --border-focus: #0060df;
-    --focus-ring-active: #0060df;
+    --border-subtle: var(--acorn-border-subtle);
+    --border-strong: var(--acorn-border-strong);
+    --border-focus: var(--acorn-focus-outline-color);
+    --focus-ring-active: var(--acorn-focus-outline-color);
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.12);
-    --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.18);
+    --shadow-sm: var(--acorn-elevation-1);
+    --shadow-md: var(--acorn-elevation-2);
+    --shadow-lg: var(--acorn-elevation-3);
+    --shadow-modal: var(--acorn-elevation-modal);
   }
 }
 
@@ -145,49 +142,49 @@
    Explicit Manual Theme Overrides (Settings selection)
    ========================================================================== */
 [data-theme="dark"] {
-  --bg-primary: var(--fx-neutral-dark-0);
-  --bg-secondary: var(--fx-neutral-dark-1);
+  --bg-primary: #1C1B22;
+  --bg-secondary: #2B2A33;
   --bg-tertiary: #201F27;
-  --bg-surface: var(--fx-neutral-dark-1);
-  --bg-surface-hover: var(--fx-neutral-dark-2);
+  --bg-surface: #2B2A33;
+  --bg-surface-hover: #383742;
   --bg-overlay: rgba(28, 27, 34, 0.85);
 
-  --text-primary: var(--fx-neutral-dark-text);
+  --text-primary: #FBFBFE;
   --text-secondary: #CFCFD8;
-  --text-muted: var(--fx-neutral-dark-muted);
-  --text-inverse: var(--fx-neutral-light-ink);
+  --text-muted: #A6A4B6;
+  --text-inverse: #15141A;
 
-  --border-subtle: var(--fx-neutral-dark-border);
+  --border-subtle: rgba(255, 255, 255, 0.10);
   --border-strong: rgba(255, 255, 255, 0.20);
   --border-focus: #37adff;
   --focus-ring-active: #37adff;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55);
-  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 18px -3px rgba(0, 0, 0, 0.55);
+  --shadow-modal: 0 20px 30px -5px rgba(0, 0, 0, 0.70);
 }
 
 [data-theme="light"] {
-  --bg-primary: var(--fx-neutral-light-0);
-  --bg-secondary: #ffffff;
-  --bg-tertiary: var(--fx-neutral-light-1);
-  --bg-surface: var(--fx-neutral-light-1);
-  --bg-surface-hover: var(--fx-neutral-light-2);
+  --bg-primary: #F9F9FB;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F0F0F4;
+  --bg-surface: #F0F0F4;
+  --bg-surface-hover: #E0E0E6;
   --bg-overlay: rgba(0, 0, 0, 0.45);
 
-  --text-primary: var(--fx-neutral-light-ink);
-  --text-secondary: var(--fx-neutral-light-muted);
-  --text-muted: var(--fx-neutral-light-muted);
-  --text-inverse: #ffffff;
+  --text-primary: #15141A;
+  --text-secondary: #5B5B66;
+  --text-muted: #5B5B66;
+  --text-inverse: #FFFFFF;
 
-  --border-subtle: var(--fx-neutral-light-border);
-  --border-strong: #cfcfd8;
+  --border-subtle: rgba(0, 0, 0, 0.10);
+  --border-strong: #CFCFD8;
   --border-focus: #0060df;
   --focus-ring-active: #0060df;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.12);
-  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.18);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 18px -3px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0 20px 30px -5px rgba(0, 0, 0, 0.18);
 }

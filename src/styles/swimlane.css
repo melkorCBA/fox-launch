@@ -1,5 +1,6 @@
 /**
  * FoxLaunch — Swimlane & Shortcut Card Styling
+ * Aligned with Firefox Acorn Design System (Nova Refresh)
  */
 
 :root {
@@ -42,7 +43,7 @@
   gap: var(--space-3);
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-swimlane);
   padding: var(--space-4) var(--space-5);
   box-shadow: var(--shadow-sm);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
@@ -83,7 +84,7 @@
   justify-content: center;
   width: 26px;
   height: 26px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   color: #ffffff;
   flex-shrink: 0;
 }
@@ -109,7 +110,7 @@
   font-weight: 600;
   color: var(--text-muted);
   background: var(--bg-tertiary);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill);
 }
 
 .swimlane-header-actions {
@@ -129,7 +130,7 @@
 .swimlane-drag-handle.is-grabbed {
   outline: 2px solid var(--focus-ring-active);
   outline-offset: 2px;
-  background-color: var(--bg-hover);
+  background-color: var(--bg-surface-hover);
 }
 
 .swimlane.keyboard-reordering {
@@ -161,7 +162,7 @@
   padding: var(--space-4) var(--space-5);
   background: var(--bg-tertiary);
   border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-card);
   color: var(--text-muted);
   font-size: var(--text-sm);
 }
@@ -175,7 +176,7 @@
   padding: var(--card-padding);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-card);
   cursor: pointer;
   outline: none;
   transition: transform var(--transition-instant), background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
@@ -190,7 +191,7 @@
 }
 
 .shortcut-card:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 .shortcut-card:focus-visible {
@@ -281,7 +282,7 @@
   margin-top: 4px;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-lg);
   padding: 4px 0;
 }

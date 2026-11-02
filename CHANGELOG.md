@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Integration with Firefox's official Acorn design system (Nova refresh), introducing a 3-tier future-proof token architecture (`src/styles/tokens/acorn.css`, `src/styles/tokens/brand.css`, `src/styles/themes.css`) (#50).
+- Living Design System specification and upstream synchronization SOP in `docs/design-system.md` (#50).
+- Dedicated repository-level UI/UX skill `.agents/skills/acorn-ui` enforcing Acorn design system standards, component patterns, and token contracts (#50).
 - Ko-fi support link in `README.md`, `CONTRIBUTING.md`, and GitHub sponsorship configuration (`.github/FUNDING.yml`).
+
+### Changed
+- Refreshed geometry, neutral surface tiers, pill search bar, and elevation across shortcut cards, swimlanes, buttons, and modals to match Acorn specifications (#50).
 
 ## [1.2.1] - 2026-11-01
 

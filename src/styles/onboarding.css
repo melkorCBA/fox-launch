@@ -1,5 +1,6 @@
 /**
  * FoxLaunch — First-Run Onboarding Walkthrough Styles
+ * Aligned with Firefox Acorn Design System (Nova Refresh)
  * Strict CSP compliant: System typography, zero external resources.
  */
 
@@ -11,7 +12,7 @@
   align-items: center;
   justify-content: center;
   background-color: var(--bg-overlay);
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(8px);
   padding: var(--space-4);
   animation: modalFadeIn var(--transition-fast);
 }
@@ -23,7 +24,7 @@
   overflow: hidden;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-dialog);
   box-shadow: var(--shadow-modal);
   padding: var(--space-6);
   display: flex;
@@ -55,7 +56,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 2px 8px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill);
   background: var(--border-focus);
   color: var(--text-inverse);
 }
@@ -136,7 +137,7 @@
 .step-dot {
   width: 6px;
   height: 6px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill);
   background: var(--border-subtle);
   transition: all var(--transition-fast);
 }
