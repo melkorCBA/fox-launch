@@ -50,6 +50,7 @@ test.describe('Challenger Adversarial Stress Tests (M4)', () => {
     expect(storage.foxlaunch_settings.theme).toBe('auto');
 
     // Rapidly toggle tabBehavior: close -> keep -> close
+    await loc.settingsTab(page, 'behavior').click();
     await loc.settingsTabBehaviorClose(page).click();
     storage = await mockHarness.getStorage();
     expect(storage.foxlaunch_settings.tabBehavior).toBe('close');
@@ -99,6 +100,7 @@ test.describe('Challenger Adversarial Stress Tests (M4)', () => {
     // Open settings modal
     await loc.settingsButton(page).click();
     await expect(loc.settingsModal(page)).toBeVisible();
+    await loc.settingsTab(page, 'data').click();
 
     const resetBtn = page.locator('#modal-root [data-action="reset-defaults"]');
     const confirmPanel = page.locator('#modal-root .reset-confirm-panel');

@@ -1,17 +1,27 @@
 /**
  * FoxLaunch — Settings Modal Component
  *
- * Implements configurable tab dispatch behavior, appearance theme switching,
- * reset-to-defaults with two-stage confirmation, and WCAG 2.1 AA focus management.
+ * Implements Option 2: Two-Pane Preferences Studio aligned with the
+ * Firefox Acorn Design System (Nova Refresh).
+ *
+ * Features:
+ * - Master-detail 2-pane preferences studio with sidebar navigation
+ * - Segmented controls for Appearance (Theme, Card Density) with live card preview
+ * - Simplified container visibility controls with interactive pills & live match count
+ * - Wildcard name patterns with instant feedback
+ * - Reset-to-defaults with two-stage confirmation
+ * - WCAG 2.1 AA focus trap and full keyboard navigation
  */
 
 import type { CardSize, ContainerContext, ContainerVisibility, FoxLaunchSettings, TabBehavior, ThemeMode } from '../types';
 import { getSettings, saveSettings, resetToDefaults } from '../services/storage';
 import { getContainers } from '../services/containers';
+import { matchesContainerName } from '../utils/containerVisibility';
 
 export interface SettingsModalOptions {
   currentSettings?: FoxLaunchSettings;
   triggerElement?: HTMLElement | null;
+  initialTab?: 'appearance' | 'behavior' | 'containers' | 'data';
   onSettingsChanged?: (updated: FoxLaunchSettings) => void;
   onResetDefaults?: () => Promise<void> | void;
 }
@@ -47,6 +57,50 @@ function createCloseSvg(): SVGSVGElement {
   );
 }
 
+function createAppearanceSvg(): SVGSVGElement {
+  return createSvg(
+    { width: '16', height: '16', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' },
+    [
+      createSvgElement('circle', { cx: '12', cy: '12', r: '4' }),
+      createSvgElement('path', { d: 'M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41' }),
+    ]
+  );
+}
+
+function createBehaviorSvg(): SVGSVGElement {
+  return createSvg(
+    { width: '16', height: '16', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' },
+    [
+      createSvgElement('rect', { x: '3', y: '3', width: '18', height: '18', rx: '2' }),
+      createSvgElement('line', { x1: '3', y1: '9', x2: '21', y2: '9' }),
+      createSvgElement('line', { x1: '9', y1: '21', x2: '9', y2: '9' }),
+    ]
+  );
+}
+
+function createContainersSvg(): SVGSVGElement {
+  return createSvg(
+    { width: '16', height: '16', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' },
+    [
+      createSvgElement('rect', { x: '3', y: '3', width: '7', height: '7', rx: '1' }),
+      createSvgElement('rect', { x: '14', y: '3', width: '7', height: '7', rx: '1' }),
+      createSvgElement('rect', { x: '14', y: '14', width: '7', height: '7', rx: '1' }),
+      createSvgElement('rect', { x: '3', y: '14', width: '7', height: '7', rx: '1' }),
+    ]
+  );
+}
+
+function createDataSvg(): SVGSVGElement {
+  return createSvg(
+    { width: '16', height: '16', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' },
+    [
+      createSvgElement('ellipse', { cx: '12', cy: '5', rx: '9', ry: '3' }),
+      createSvgElement('path', { d: 'M21 12c0 1.66-4 3-9 3s-9-1.34-9-3' }),
+      createSvgElement('path', { d: 'M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5' }),
+    ]
+  );
+}
+
 export function openSettingsModal(
   triggerElement?: HTMLElement | null,
   onResetDefaults?: () => Promise<void> | void
@@ -62,12 +116,14 @@ export function openSettingsModal(
   let onResetDefaults: (() => Promise<void> | void) | undefined = arg2;
   let onSettingsChanged: ((updated: FoxLaunchSettings) => void) | undefined;
   let initialSettings: FoxLaunchSettings | undefined;
+  let initialTab: 'appearance' | 'behavior' | 'containers' | 'data' = 'appearance';
 
   if (arg1 && 'nodeType' in arg1) {
     triggerElement = arg1 as HTMLElement;
   } else if (arg1 && typeof arg1 === 'object') {
     const opts = arg1 as SettingsModalOptions;
     triggerElement = opts.triggerElement ?? null;
+    initialTab = opts.initialTab ?? 'appearance';
     onResetDefaults = opts.onResetDefaults ?? arg2;
     onSettingsChanged = opts.onSettingsChanged;
     initialSettings = opts.currentSettings;
@@ -111,55 +167,106 @@ export function openSettingsModal(
     header.appendChild(closeBtn);
     dialog.appendChild(header);
 
-    // --- Content Body ---
-    const content = document.createElement('div');
-    content.className = 'modal-form modal-body';
+    // --- Content Body (Two-Pane Studio Layout) ---
+    const body = document.createElement('div');
+    body.className = 'modal-form modal-body';
 
-    // Section 1: Tab Dispatch Behavior
-    const tabSection = document.createElement('div');
-    tabSection.className = 'settings-section';
-    tabSection.setAttribute('role', 'radiogroup');
-    tabSection.setAttribute('aria-labelledby', 'tab-dispatch-title');
+    // 1. Sidebar Navigation
+    const sidebar = document.createElement('nav');
+    sidebar.className = 'studio-sidebar';
+    sidebar.setAttribute('role', 'tablist');
+    sidebar.setAttribute('aria-orientation', 'vertical');
+    sidebar.setAttribute('aria-label', 'Settings navigation');
 
-    const tabTitle = document.createElement('span');
-    tabTitle.id = 'tab-dispatch-title';
-    tabTitle.className = 'settings-section-title';
-    tabTitle.textContent = 'Tab Dispatch Behavior';
-    tabSection.appendChild(tabTitle);
+    interface SidebarItem {
+      id: string;
+      testId: string;
+      label: string;
+      icon: SVGSVGElement;
+      sectionId: string;
+    }
 
-    const tabOptionsGroup = document.createElement('div');
-    tabOptionsGroup.className = 'settings-options-group';
+    const navItems: SidebarItem[] = [
+      { id: 'tab-appearance', testId: 'nav-tab-appearance', label: 'Appearance', icon: createAppearanceSvg(), sectionId: 'section-appearance' },
+      { id: 'tab-behavior', testId: 'nav-tab-behavior', label: 'Behavior', icon: createBehaviorSvg(), sectionId: 'section-behavior' },
+      { id: 'tab-containers', testId: 'nav-tab-containers', label: 'Containers', icon: createContainersSvg(), sectionId: 'section-containers' },
+      { id: 'tab-data', testId: 'nav-tab-data', label: 'Data & Reset', icon: createDataSvg(), sectionId: 'section-data' },
+    ];
 
-    const createTabOption = (value: TabBehavior, label: string) => {
-      const labelEl = document.createElement('label');
-      labelEl.className = 'radio-option';
+    const navButtons: HTMLButtonElement[] = [];
 
-      const radio = document.createElement('input');
-      radio.type = 'radio';
-      radio.name = 'tabBehavior';
-      radio.value = value;
-      radio.setAttribute('data-setting-val', value);
-      radio.checked = activeSettings.tabBehavior === value;
+    // Forward declare sections for tab switching
+    let appearanceSection: HTMLElement;
+    let behaviorSection: HTMLElement;
+    let visibilitySection: HTMLElement;
+    let resetSection: HTMLElement;
 
-      radio.addEventListener('change', async () => {
-        if (radio.checked) {
-          const updated = await saveSettings({ tabBehavior: value });
-          activeSettings.tabBehavior = value;
-          onSettingsChanged?.(updated);
-        }
+    const switchTab = (targetSectionId: string) => {
+      navButtons.forEach((btn) => {
+        const isCurrent = btn.getAttribute('data-target-section') === targetSectionId;
+        btn.classList.toggle('active', isCurrent);
+        btn.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+        btn.setAttribute('tabindex', isCurrent ? '0' : '-1');
       });
 
-      labelEl.appendChild(radio);
-      labelEl.appendChild(document.createTextNode(label));
-      return labelEl;
+      const sections = [appearanceSection, behaviorSection, visibilitySection, resetSection];
+      sections.forEach((sec) => {
+        if (!sec) return;
+        const isActive = sec.id === targetSectionId;
+        sec.classList.toggle('active', isActive);
+        if (isActive) {
+          sec.removeAttribute('hidden');
+        } else {
+          sec.setAttribute('hidden', '');
+        }
+      });
     };
 
-    tabOptionsGroup.appendChild(createTabOption('keep', 'Keep launcher tab open'));
-    tabOptionsGroup.appendChild(createTabOption('close', 'Close launcher tab'));
-    tabSection.appendChild(tabOptionsGroup);
-    content.appendChild(tabSection);
+    navItems.forEach((item) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = item.id;
+      btn.className = 'studio-nav-item';
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('data-testid', item.testId);
+      btn.setAttribute('data-target-section', item.sectionId);
+      btn.setAttribute('aria-controls', item.sectionId);
+      btn.setAttribute('aria-selected', 'false');
+      btn.setAttribute('tabindex', '-1');
+      btn.appendChild(item.icon);
+      btn.appendChild(document.createTextNode(item.label));
 
-    // Section 2: Appearance Theme
+      btn.addEventListener('click', () => {
+        switchTab(item.sectionId);
+      });
+
+      navButtons.push(btn);
+      sidebar.appendChild(btn);
+    });
+
+    body.appendChild(sidebar);
+
+    // 2. Main Studio Content Area
+    const content = document.createElement('div');
+    content.className = 'studio-content';
+
+    // --- Section 1: Appearance (Theme & Card Density & Live Preview) ---
+    appearanceSection = document.createElement('section');
+    appearanceSection.id = 'section-appearance';
+    appearanceSection.className = 'studio-section';
+    appearanceSection.setAttribute('role', 'tabpanel');
+    appearanceSection.setAttribute('aria-labelledby', 'tab-appearance');
+    appearanceSection.setAttribute('tabindex', '0');
+
+    const appearanceHeader = document.createElement('div');
+    appearanceHeader.className = 'studio-section-header';
+    const appearanceTitle = document.createElement('span');
+    appearanceTitle.className = 'studio-section-title';
+    appearanceTitle.textContent = 'Appearance & Display';
+    appearanceHeader.appendChild(appearanceTitle);
+    appearanceSection.appendChild(appearanceHeader);
+
+    // Subsection: Theme
     const themeSection = document.createElement('div');
     themeSection.className = 'settings-section';
     themeSection.setAttribute('role', 'radiogroup');
@@ -168,15 +275,36 @@ export function openSettingsModal(
     const themeTitle = document.createElement('span');
     themeTitle.id = 'theme-heading-title';
     themeTitle.className = 'settings-section-title';
-    themeTitle.textContent = 'Appearance Theme';
+    themeTitle.textContent = 'Theme';
     themeSection.appendChild(themeTitle);
 
     const themeOptionsGroup = document.createElement('div');
-    themeOptionsGroup.className = 'settings-options-group';
+    themeOptionsGroup.className = 'segmented-control';
+
+    let previewCard: HTMLElement | null = null;
+    let previewAvatar: HTMLElement | null = null;
+    let previewTitle: HTMLElement | null = null;
+    let previewDomain: HTMLElement | null = null;
+
+    const updateLivePreview = (size: CardSize) => {
+      if (!previewCard || !previewAvatar || !previewTitle || !previewDomain) return;
+      const metrics = {
+        small: { padding: '8px', avatar: '24px', title: '12px', domain: '10px' },
+        medium: { padding: '12px', avatar: '32px', title: '13px', domain: '11px' },
+        large: { padding: '16px', avatar: '40px', title: '15px', domain: '13px' },
+      }[size];
+
+      previewCard.style.padding = metrics.padding;
+      previewCard.style.gap = metrics.padding;
+      previewAvatar.style.width = metrics.avatar;
+      previewAvatar.style.height = metrics.avatar;
+      previewTitle.style.fontSize = metrics.title;
+      previewDomain.style.fontSize = metrics.domain;
+    };
 
     const createThemeOption = (theme: ThemeMode, label: string) => {
       const labelEl = document.createElement('label');
-      labelEl.className = 'radio-option';
+      labelEl.className = `segment-option ${activeSettings.theme === theme ? 'is-checked' : ''}`;
 
       const radio = document.createElement('input');
       radio.type = 'radio';
@@ -187,6 +315,8 @@ export function openSettingsModal(
 
       radio.addEventListener('change', async () => {
         if (radio.checked) {
+          themeOptionsGroup.querySelectorAll('.segment-option').forEach((el) => el.classList.remove('is-checked'));
+          labelEl.classList.add('is-checked');
           if (theme === 'auto') {
             document.documentElement.removeAttribute('data-theme');
           } else {
@@ -207,9 +337,9 @@ export function openSettingsModal(
     themeOptionsGroup.appendChild(createThemeOption('light', 'Light'));
     themeOptionsGroup.appendChild(createThemeOption('dark', 'Dark'));
     themeSection.appendChild(themeOptionsGroup);
-    content.appendChild(themeSection);
+    appearanceSection.appendChild(themeSection);
 
-    // Section 3: Card Size
+    // Subsection: Card Size
     const cardSizeSection = document.createElement('div');
     cardSizeSection.className = 'settings-section';
     cardSizeSection.setAttribute('role', 'radiogroup');
@@ -222,11 +352,11 @@ export function openSettingsModal(
     cardSizeSection.appendChild(cardSizeTitle);
 
     const cardSizeOptionsGroup = document.createElement('div');
-    cardSizeOptionsGroup.className = 'settings-options-group';
+    cardSizeOptionsGroup.className = 'segmented-control';
 
     const createCardSizeOption = (cardSize: CardSize, label: string) => {
       const labelEl = document.createElement('label');
-      labelEl.className = 'radio-option';
+      labelEl.className = `segment-option ${activeSettings.cardSize === cardSize ? 'is-checked' : ''}`;
 
       const radio = document.createElement('input');
       radio.type = 'radio';
@@ -236,7 +366,10 @@ export function openSettingsModal(
 
       radio.addEventListener('change', async () => {
         if (radio.checked) {
+          cardSizeOptionsGroup.querySelectorAll('.segment-option').forEach((el) => el.classList.remove('is-checked'));
+          labelEl.classList.add('is-checked');
           document.documentElement.setAttribute('data-card-size', cardSize);
+          updateLivePreview(cardSize);
           const updated = await saveSettings({ cardSize });
           activeSettings.cardSize = cardSize;
           onSettingsChanged?.(updated);
@@ -252,19 +385,128 @@ export function openSettingsModal(
     cardSizeOptionsGroup.appendChild(createCardSizeOption('medium', 'Medium (default)'));
     cardSizeOptionsGroup.appendChild(createCardSizeOption('large', 'Large'));
     cardSizeSection.appendChild(cardSizeOptionsGroup);
-    content.appendChild(cardSizeSection);
+    appearanceSection.appendChild(cardSizeSection);
 
-    // Section 4: Container Swimlane Visibility
-    const visibilitySection = document.createElement('div');
-    visibilitySection.className = 'settings-section';
+    // Subsection: Live Card Preview Box
+    const previewBox = document.createElement('div');
+    previewBox.className = 'studio-preview-box';
+    const previewHeader = document.createElement('span');
+    previewHeader.className = 'studio-preview-label';
+    previewHeader.textContent = 'Live Card Preview';
+    previewBox.appendChild(previewHeader);
+
+    previewCard = document.createElement('div');
+    previewCard.className = 'studio-preview-card';
+    previewAvatar = document.createElement('div');
+    previewAvatar.className = 'studio-preview-avatar';
+    previewAvatar.textContent = 'FX';
+
+    const previewText = document.createElement('div');
+    previewText.className = 'studio-preview-text';
+    previewTitle = document.createElement('span');
+    previewTitle.className = 'studio-preview-title';
+    previewTitle.textContent = 'Firefox Add-ons';
+    previewDomain = document.createElement('span');
+    previewDomain.className = 'studio-preview-domain';
+    previewDomain.textContent = 'addons.mozilla.org';
+    previewText.append(previewTitle, previewDomain);
+
+    previewCard.append(previewAvatar, previewText);
+    previewBox.appendChild(previewCard);
+    appearanceSection.appendChild(previewBox);
+
+    updateLivePreview(activeSettings.cardSize);
+    content.appendChild(appearanceSection);
+
+    // --- Section 2: Behavior & Tab Dispatch ---
+    behaviorSection = document.createElement('section');
+    behaviorSection.id = 'section-behavior';
+    behaviorSection.className = 'studio-section';
+    behaviorSection.setAttribute('role', 'tabpanel');
+    behaviorSection.setAttribute('aria-labelledby', 'tab-behavior');
+    behaviorSection.setAttribute('tabindex', '0');
+
+    const behaviorHeader = document.createElement('div');
+    behaviorHeader.className = 'studio-section-header';
+    const behaviorTitle = document.createElement('span');
+    behaviorTitle.className = 'studio-section-title';
+    behaviorTitle.textContent = 'Behavior & Tabs';
+    behaviorHeader.appendChild(behaviorTitle);
+    behaviorSection.appendChild(behaviorHeader);
+
+    const tabSection = document.createElement('div');
+    tabSection.className = 'settings-section';
+    tabSection.setAttribute('role', 'radiogroup');
+    tabSection.setAttribute('aria-labelledby', 'tab-dispatch-title');
+
+    const tabTitle = document.createElement('span');
+    tabTitle.id = 'tab-dispatch-title';
+    tabTitle.className = 'settings-section-title';
+    tabTitle.textContent = 'Tab Dispatch Behavior';
+    tabSection.appendChild(tabTitle);
+
+    const tabOptionsGroup = document.createElement('div');
+    tabOptionsGroup.className = 'segmented-control';
+
+    const createTabOption = (value: TabBehavior, label: string) => {
+      const labelEl = document.createElement('label');
+      labelEl.className = `segment-option ${activeSettings.tabBehavior === value ? 'is-checked' : ''}`;
+
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'tabBehavior';
+      radio.value = value;
+      radio.setAttribute('data-setting-val', value);
+      radio.checked = activeSettings.tabBehavior === value;
+
+      radio.addEventListener('change', async () => {
+        if (radio.checked) {
+          tabOptionsGroup.querySelectorAll('.segment-option').forEach((el) => el.classList.remove('is-checked'));
+          labelEl.classList.add('is-checked');
+          const updated = await saveSettings({ tabBehavior: value });
+          activeSettings.tabBehavior = value;
+          onSettingsChanged?.(updated);
+        }
+      });
+
+      labelEl.appendChild(radio);
+      labelEl.appendChild(document.createTextNode(label));
+      return labelEl;
+    };
+
+    tabOptionsGroup.appendChild(createTabOption('keep', 'Keep launcher tab open'));
+    tabOptionsGroup.appendChild(createTabOption('close', 'Close launcher tab'));
+    tabSection.appendChild(tabOptionsGroup);
+    behaviorSection.appendChild(tabSection);
+    content.appendChild(behaviorSection);
+
+    // --- Section 3: Containers & Wildcard Visibility ---
+    visibilitySection = document.createElement('section');
+    visibilitySection.id = 'section-containers';
+    visibilitySection.className = 'studio-section';
+    visibilitySection.setAttribute('role', 'tabpanel');
+    visibilitySection.setAttribute('aria-labelledby', 'tab-containers');
+    visibilitySection.setAttribute('tabindex', '0');
+
+    const visibilityHeader = document.createElement('div');
+    visibilityHeader.className = 'studio-section-header';
     const visibilityTitle = document.createElement('span');
     visibilityTitle.id = 'container-visibility-title';
-    visibilityTitle.className = 'settings-section-title';
+    visibilityTitle.className = 'studio-section-title';
     visibilityTitle.textContent = 'Container Swimlane Visibility';
-    visibilitySection.appendChild(visibilityTitle);
 
+    const matchBadge = document.createElement('span');
+    matchBadge.id = 'container-match-count';
+    matchBadge.className = 'studio-count-badge';
+    matchBadge.setAttribute('role', 'status');
+    matchBadge.setAttribute('aria-live', 'polite');
+    matchBadge.setAttribute('aria-atomic', 'true');
+    visibilityHeader.append(visibilityTitle, matchBadge);
+    visibilitySection.appendChild(visibilityHeader);
+
+    // Mode Selector
     const visibilityOptions = document.createElement('div');
-    visibilityOptions.className = 'settings-options-group';
+    visibilityOptions.className = 'segmented-control';
     visibilityOptions.setAttribute('role', 'radiogroup');
     visibilityOptions.setAttribute('aria-labelledby', visibilityTitle.id);
 
@@ -277,12 +519,38 @@ export function openSettingsModal(
     filterControls.appendChild(legend);
 
     let visibility = activeSettings.containerVisibility;
+    const nonDefaultContainers = containers.filter((c) => !c.isDefault);
+
+    const updateMatchBadge = () => {
+      if (visibility.mode === 'all') {
+        matchBadge.textContent = `All ${nonDefaultContainers.length} containers visible`;
+        return;
+      }
+
+      const matched = new Set<string>();
+      nonDefaultContainers.forEach((c) => {
+        const matchesId = visibility.cookieStoreIds.includes(c.cookieStoreId);
+        const matchesPattern = visibility.namePatterns.some((p) => matchesContainerName(c.name, p));
+        if (matchesId || matchesPattern) {
+          matched.add(c.cookieStoreId);
+        }
+      });
+
+      const count = matched.size;
+      if (visibility.mode === 'only') {
+        matchBadge.textContent = `Matching ${count} of ${nonDefaultContainers.length} container${nonDefaultContainers.length === 1 ? '' : 's'}`;
+      } else {
+        matchBadge.textContent = `Hiding ${count} of ${nonDefaultContainers.length} container${nonDefaultContainers.length === 1 ? '' : 's'}`;
+      }
+    };
+
     const persistVisibility = async () => {
       const snapshot = { ...visibility, cookieStoreIds: [...visibility.cookieStoreIds] };
       try {
         const updated = await saveSettings({ containerVisibility: snapshot });
         activeSettings.containerVisibility = snapshot;
         onSettingsChanged?.(updated);
+        updateMatchBadge();
       } catch (error) {
         console.error('[FoxLaunch] Error saving container visibility:', error);
       }
@@ -290,7 +558,7 @@ export function openSettingsModal(
 
     const createVisibilityOption = (mode: ContainerVisibility['mode'], label: string) => {
       const labelEl = document.createElement('label');
-      labelEl.className = 'radio-option';
+      labelEl.className = `segment-option ${visibility.mode === mode ? 'is-checked' : ''}`;
       const radio = document.createElement('input');
       radio.type = 'radio';
       radio.name = 'containerVisibility';
@@ -298,6 +566,8 @@ export function openSettingsModal(
       radio.checked = visibility.mode === mode;
       radio.addEventListener('change', () => {
         if (!radio.checked) return;
+        visibilityOptions.querySelectorAll('.segment-option').forEach((el) => el.classList.remove('is-checked'));
+        labelEl.classList.add('is-checked');
         visibility = { ...visibility, mode };
         filterControls.disabled = mode === 'all';
         persistVisibility();
@@ -305,6 +575,7 @@ export function openSettingsModal(
       labelEl.append(radio, document.createTextNode(label));
       return labelEl;
     };
+
     visibilityOptions.append(
       createVisibilityOption('all', 'Show all'),
       createVisibilityOption('only', 'Only show these'),
@@ -312,34 +583,60 @@ export function openSettingsModal(
     );
     visibilitySection.appendChild(visibilityOptions);
 
-    const containerList = document.createElement('div');
-    containerList.className = 'settings-container-list';
-    containers.filter((container) => !container.isDefault).forEach((container) => {
+    // Container Pills
+    const containerPillsWrap = document.createElement('div');
+    containerPillsWrap.className = 'studio-container-pills';
+
+    nonDefaultContainers.forEach((container) => {
       const label = document.createElement('label');
-      label.className = 'radio-option';
+      label.className = `studio-pill-badge ${visibility.cookieStoreIds.includes(container.cookieStoreId) ? 'active' : ''}`;
+      label.style.setProperty('--pill-color', container.colorCode || 'var(--fx-orange)');
+
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.value = container.cookieStoreId;
       checkbox.checked = visibility.cookieStoreIds.includes(container.cookieStoreId);
       checkbox.addEventListener('change', () => {
         const ids = visibility.cookieStoreIds.filter((id) => id !== container.cookieStoreId);
-        if (checkbox.checked) ids.push(container.cookieStoreId);
+        if (checkbox.checked) {
+          ids.push(container.cookieStoreId);
+          label.classList.add('active');
+        } else {
+          label.classList.remove('active');
+        }
         visibility = { ...visibility, cookieStoreIds: ids };
         persistVisibility();
       });
-      label.append(checkbox, document.createTextNode(container.name));
-      containerList.appendChild(label);
-    });
-    filterControls.appendChild(containerList);
 
+      const dot = document.createElement('span');
+      dot.className = 'studio-pill-dot';
+      dot.setAttribute('aria-hidden', 'true');
+      dot.style.background = container.colorCode || 'var(--fx-orange)';
+
+      const name = document.createElement('span');
+      name.className = 'studio-pill-name';
+      name.textContent = container.name;
+
+      const check = document.createElement('span');
+      check.className = 'studio-pill-check';
+      check.setAttribute('aria-hidden', 'true');
+      check.textContent = '✓';
+
+      label.append(checkbox, dot, name, check);
+      containerPillsWrap.appendChild(label);
+    });
+    filterControls.appendChild(containerPillsWrap);
+
+    // Wildcard Pattern Textarea (Accessible & Fully Backward-Compatible)
     const patternLabel = document.createElement('label');
     patternLabel.className = 'form-label';
     patternLabel.htmlFor = 'container-name-patterns';
     patternLabel.textContent = 'Container name patterns';
+
     const patterns = document.createElement('textarea');
     patterns.id = patternLabel.htmlFor;
     patterns.className = 'form-input container-name-patterns';
-    patterns.rows = 3;
+    patterns.rows = 2;
     patterns.placeholder = 'Work*\nDev-*';
     patterns.value = visibility.namePatterns.join('\n');
     patterns.setAttribute('aria-describedby', 'container-pattern-help');
@@ -350,22 +647,33 @@ export function openSettingsModal(
       };
       persistVisibility();
     });
+
     const patternHelp = document.createElement('p');
     patternHelp.id = 'container-pattern-help';
     patternHelp.className = 'form-label';
+    patternHelp.style.fontSize = 'var(--text-xs)';
     patternHelp.textContent = 'One pattern per line. * matches any text; names match case-insensitively. The default context always remains visible. Changes save locally.';
+
     filterControls.append(patternLabel, patterns, patternHelp);
     visibilitySection.appendChild(filterControls);
     content.appendChild(visibilitySection);
+    updateMatchBadge();
 
-    // Section 5: Reset to Defaults (Inline Two-Stage Confirmation)
-    const resetSection = document.createElement('div');
-    resetSection.className = 'settings-section settings-reset-section';
+    // --- Section 4: Data Management & Reset to Defaults ---
+    resetSection = document.createElement('section');
+    resetSection.id = 'section-data';
+    resetSection.className = 'studio-section settings-reset-section';
+    resetSection.setAttribute('role', 'tabpanel');
+    resetSection.setAttribute('aria-labelledby', 'tab-data');
+    resetSection.setAttribute('tabindex', '0');
 
+    const resetHeader = document.createElement('div');
+    resetHeader.className = 'studio-section-header';
     const resetTitle = document.createElement('span');
-    resetTitle.className = 'settings-section-title';
+    resetTitle.className = 'studio-section-title';
     resetTitle.textContent = 'Data Management';
-    resetSection.appendChild(resetTitle);
+    resetHeader.appendChild(resetTitle);
+    resetSection.appendChild(resetHeader);
 
     const resetControls = document.createElement('div');
     resetControls.className = 'settings-reset-group';
@@ -435,9 +743,19 @@ export function openSettingsModal(
     resetSection.appendChild(resetControls);
     content.appendChild(resetSection);
 
+    body.appendChild(content);
+
+    // Activate initial tab
+    switchTab(`section-${initialTab}`);
+
     // --- Footer Actions ---
     const footer = document.createElement('div');
     footer.className = 'modal-footer';
+
+    const footerHint = document.createElement('span');
+    footerHint.className = 'studio-footer-hint';
+    footerHint.textContent = '✓ Changes saved automatically';
+    footer.appendChild(footerHint);
 
     const doneBtn = document.createElement('button');
     doneBtn.type = 'button';
@@ -447,7 +765,7 @@ export function openSettingsModal(
     doneBtn.textContent = 'Done';
     footer.appendChild(doneBtn);
 
-    dialog.appendChild(content);
+    dialog.appendChild(body);
     dialog.appendChild(footer);
     backdrop.appendChild(dialog);
     modalRoot.appendChild(backdrop);
@@ -476,6 +794,24 @@ export function openSettingsModal(
         e.preventDefault();
         closeModal();
         return;
+      }
+
+      // Sidebar arrow key navigation
+      if (document.activeElement && sidebar.contains(document.activeElement)) {
+        const curIdx = navButtons.indexOf(document.activeElement as HTMLButtonElement);
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          const nextIdx = (curIdx + 1) % navButtons.length;
+          navButtons[nextIdx].focus();
+          navButtons[nextIdx].click();
+          return;
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const prevIdx = (curIdx - 1 + navButtons.length) % navButtons.length;
+          navButtons[prevIdx].focus();
+          navButtons[prevIdx].click();
+          return;
+        }
       }
 
       if (e.key === 'Tab') {

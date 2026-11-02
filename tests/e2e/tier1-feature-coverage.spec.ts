@@ -578,6 +578,7 @@ test.describe('Tier 1: Feature Coverage', () => {
       });
 
       await loc.settingsButton(page).click();
+      await loc.settingsTab(page, 'behavior').click();
       await loc.settingsTabBehaviorKeep(page).click();
 
       const storage = await mockHarness.getStorage();
@@ -640,6 +641,9 @@ test.describe('Tier 1: Feature Coverage', () => {
       await gearBtn.click();
       const modal = loc.settingsModal(page);
       await expect(modal).toBeVisible();
+
+      // Switch to Data tab
+      await loc.settingsTab(page, 'data').click();
 
       // Click Reset to Defaults button
       const resetBtn = page.locator('#modal-root [data-action="reset-defaults"], .btn-reset-defaults');

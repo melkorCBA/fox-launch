@@ -40,12 +40,14 @@ test.describe('Container visibility settings', () => {
     await openFoxLaunch({ settings: legacySettings });
     await expect(page.locator('.swimlane')).toHaveCount(5);
     await page.locator('#settings-btn').click();
+    await page.locator('[data-testid="nav-tab-containers"]').click();
     await expect(page.getByRole('radio', { name: 'Show all', exact: true })).toBeChecked();
   });
 
   test('only shows selected IDs or matching names and persists without deleting shortcuts', async ({ openFoxLaunch, page, mockHarness }) => {
     await openFoxLaunch({ shortcuts: SAMPLE_SHORTCUTS });
     await page.locator('#settings-btn').click();
+    await page.locator('[data-testid="nav-tab-containers"]').click();
     await page.getByRole('radio', { name: 'Only show these', exact: true }).check();
     await expect(page.locator('.swimlane')).toHaveCount(1);
     await page.getByRole('checkbox', { name: 'Personal', exact: true }).check();
@@ -61,6 +63,7 @@ test.describe('Container visibility settings', () => {
     await mockHarness.reloadPage();
     await expect(page.locator('.swimlane')).toHaveCount(3);
     await page.locator('#settings-btn').click();
+    await page.locator('[data-testid="nav-tab-containers"]').click();
     await expect(page.getByRole('checkbox', { name: 'Personal', exact: true })).toBeChecked();
     await expect(page.getByLabel('Container name patterns')).toHaveValue('Work*\nDev-*');
     await page.getByRole('radio', { name: 'Show all', exact: true }).check();
@@ -84,6 +87,7 @@ test.describe('Container visibility settings', () => {
     await page.locator('#search-input').fill('');
     await expect(page.locator('.swimlane:visible')).toHaveCount(3);
     await page.locator('#settings-btn').click();
+    await page.locator('[data-testid="nav-tab-containers"]').click();
     await page.getByRole('checkbox', { name: 'Personal', exact: true }).uncheck();
     await page.getByLabel('Container name patterns').fill('');
     await page.getByRole('button', { name: 'Done', exact: true }).click();
@@ -115,8 +119,10 @@ test.describe('Container visibility settings', () => {
     });
     await expect(page.locator('.swimlane')).toHaveCount(5);
     await page.locator('#settings-btn').click();
+    await page.locator('[data-testid="nav-tab-containers"]').click();
     await page.getByRole('radio', { name: 'Hide these', exact: true }).check();
     await expect(page.locator('.swimlane')).toHaveCount(1);
+    await page.locator('[data-testid="nav-tab-data"]').click();
     await page.getByRole('button', { name: 'Reset to Defaults...' }).click();
     await page.getByRole('button', { name: 'Yes, Reset Everything' }).click();
     await expect(page.locator('.swimlane')).toHaveCount(5);
@@ -168,6 +174,7 @@ test.describe('Container visibility settings', () => {
     ]);
 
     await page.locator('#settings-btn').click();
+    await page.locator('[data-testid="nav-tab-containers"]').click();
     await page.getByRole('radio', { name: 'Show all', exact: true }).check();
     await page.getByRole('button', { name: 'Done', exact: true }).click();
 

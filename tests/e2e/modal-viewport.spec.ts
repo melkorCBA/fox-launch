@@ -45,9 +45,11 @@ test.describe('Modal viewport bounds', () => {
         settings: { ...DEFAULT_SETTINGS, containerVisibility: { mode: 'hide', cookieStoreIds: [], namePatterns: [] } },
       });
       await loc.settingsButton(page).click();
+      await page.locator('[data-testid="nav-tab-containers"]').click();
       const dialog = page.getByTestId('settings-modal');
       await expectViewportSafeLayout(dialog);
       await expectInternalScrolling(dialog);
+      await page.locator('[data-testid="nav-tab-data"]').click();
       await dialog.getByTestId('btn-reset-defaults').click();
       await expect(dialog.getByTestId('reset-confirm-panel')).toBeVisible();
       await expectViewportSafeLayout(dialog);
