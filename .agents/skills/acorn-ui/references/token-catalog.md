@@ -30,16 +30,18 @@ Quick reference table for FoxLaunch UI development.
 
 ---
 
-## 3. Brand Accents & Colors
+## 3. Brand Accents & Interactive Controls
 
-| Token | Hex / Gradient | Purpose |
-|---|---|---|
-| `--brand-flame-gradient` | `linear-gradient(135deg, #FFB800 0%, #FF7139 45%, #C6007A 100%)` | Curled Ensō Flame Fox mark |
-| `--fx-orange` | `#FF7139` | Primary action button fill |
-| `--fx-orange-hover` | `#E05620` | Primary action button hover fill |
-| `--fx-violet` | `#8000FF` | Brand depth highlight |
-| `--fx-magenta` | `#FF2A85` | Accent indicator |
-| `--fx-yellow` | `#FFD43B` | Keyboard shortcut highlight |
+| Semantic Variable | Source Foundation | Value / Mapping | Target Components |
+|---|---|---|---|
+| `--brand-flame-gradient` | Brand Foundation | `linear-gradient(135deg, #FFB800 0%, #FF7139 45%, #C6007A 100%)` | Curled Ensō Flame Fox mark |
+| `--btn-primary-bg` | Brand Foundation | `var(--fx-orange)` (`#FF7139`) | Primary action button fill |
+| `--btn-primary-hover` | Brand Foundation | `var(--fx-orange-hover)` (`#E05620`) | Primary action button hover fill |
+| `--fx-orange` | Brand Primitive | `#FF7139` | Primary brand accent |
+| `--fx-orange-hover` | Brand Primitive | `#E05620` | Primary brand hover |
+| `--fx-violet` | Brand Primitive | `#8000FF` | Brand depth highlight |
+| `--fx-magenta` | Brand Primitive | `#FF2A85` | Accent indicator |
+| `--fx-yellow` | Brand Primitive | `#FFD43B` | Keyboard shortcut highlight |
 
 ---
 

@@ -122,7 +122,7 @@
   padding: 0 var(--space-4);
   font-size: var(--text-sm);
   font-weight: 600;
-  background: var(--fx-orange);
+  background: var(--btn-primary-bg);
   color: var(--fx-neutral-light-ink, #15141A);
   border: none;
   border-radius: var(--radius-button);
@@ -131,7 +131,7 @@
 }
 
 .btn-primary:hover {
-  background: var(--fx-orange-hover);
+  background: var(--btn-primary-hover);
 }
 
 .btn-primary:active {

@@ -79,60 +79,108 @@
      ======================================================================== */
   --acorn-color-accent-primary: #7542FF;
   --acorn-color-accent-primary-hover: #5F2EEA;
+
+  /* ========================================================================
+     8. Acorn Dark Palette Foundations
+     ======================================================================== */
+  --acorn-dark-surface-canvas: #1C1B22;       /* Base Obsidian background */
+  --acorn-dark-surface-layer-1: #2B2A33;      /* Container swimlane & card base */
+  --acorn-dark-surface-layer-2: #383742;      /* Interactive hover surface */
+  --acorn-dark-surface-layer-3: #201F27;      /* Recessed / nested surface */
+  --acorn-dark-surface-dialog: #2B2A33;       /* Elevated dialog surface */
+  --acorn-dark-surface-overlay: rgba(28, 27, 34, 0.85); /* Frosted backdrop */
+
+  --acorn-dark-text-primary: #FBFBFE;
+  --acorn-dark-text-secondary: #CFCFD8;
+  --acorn-dark-text-muted: #A6A4B6;           /* WCAG AA 5.7:1 */
+  --acorn-dark-text-inverse: #15141A;
+
+  --acorn-dark-border-subtle: rgba(255, 255, 255, 0.10);
+  --acorn-dark-border-strong: rgba(255, 255, 255, 0.20);
+  --acorn-dark-focus-outline-color: #37adff;
+
+  --acorn-dark-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --acorn-dark-elevation-2: 0 4px 8px -1px rgba(0, 0, 0, 0.45);
+  --acorn-dark-elevation-3: 0 10px 18px -3px rgba(0, 0, 0, 0.55);
+  --acorn-dark-elevation-modal: 0 20px 30px -5px rgba(0, 0, 0, 0.70);
+
+  /* ========================================================================
+     9. Acorn Light Palette Foundations
+     ======================================================================== */
+  --acorn-light-surface-canvas: #F9F9FB;       /* Crisp clean canvas */
+  --acorn-light-surface-layer-1: #F0F0F4;      /* Elevated card & surface base */
+  --acorn-light-surface-layer-2: #E0E0E6;      /* Interactive hover surface */
+  --acorn-light-surface-layer-3: #F0F0F4;      /* Recessed / badge surface */
+  --acorn-light-surface-dialog: #FFFFFF;       /* Elevated dialog surface */
+  --acorn-light-surface-overlay: rgba(0, 0, 0, 0.45); /* Backdrop */
+
+  --acorn-light-text-primary: #15141A;
+  --acorn-light-text-secondary: #5B5B66;
+  --acorn-light-text-muted: #5B5B66;           /* WCAG AA 5.9:1 */
+  --acorn-light-text-inverse: #FFFFFF;
+
+  --acorn-light-border-subtle: rgba(0, 0, 0, 0.10);
+  --acorn-light-border-strong: #CFCFD8;
+  --acorn-light-focus-outline-color: #0060df;
+
+  --acorn-light-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --acorn-light-elevation-2: 0 4px 8px -1px rgba(0, 0, 0, 0.08);
+  --acorn-light-elevation-3: 0 10px 18px -3px rgba(0, 0, 0, 0.12);
+  --acorn-light-elevation-modal: 0 20px 30px -5px rgba(0, 0, 0, 0.18);
 }
 
 /* ==========================================================================
-   Acorn Dark Neutral Foundations (Default for Dark Theme)
+   Acorn Dark Dynamic Foundations (prefers-color-scheme: dark)
    ========================================================================== */
 @media (prefers-color-scheme: dark) {
   :root {
-    --acorn-surface-canvas: #1C1B22;       /* Base Obsidian background */
-    --acorn-surface-layer-1: #2B2A33;      /* Container swimlane & card base */
-    --acorn-surface-layer-2: #383742;      /* Interactive hover surface */
-    --acorn-surface-layer-3: #201F27;      /* Recessed / nested surface */
-    --acorn-surface-dialog: #2B2A33;       /* Elevated dialog surface */
-    --acorn-surface-overlay: rgba(28, 27, 34, 0.85); /* Frosted backdrop */
+    --acorn-surface-canvas: var(--acorn-dark-surface-canvas);
+    --acorn-surface-layer-1: var(--acorn-dark-surface-layer-1);
+    --acorn-surface-layer-2: var(--acorn-dark-surface-layer-2);
+    --acorn-surface-layer-3: var(--acorn-dark-surface-layer-3);
+    --acorn-surface-dialog: var(--acorn-dark-surface-dialog);
+    --acorn-surface-overlay: var(--acorn-dark-surface-overlay);
 
-    --acorn-text-primary: #FBFBFE;
-    --acorn-text-secondary: #CFCFD8;
-    --acorn-text-muted: #A6A4B6;           /* WCAG AA 5.7:1 */
-    --acorn-text-inverse: #15141A;
+    --acorn-text-primary: var(--acorn-dark-text-primary);
+    --acorn-text-secondary: var(--acorn-dark-text-secondary);
+    --acorn-text-muted: var(--acorn-dark-text-muted);
+    --acorn-text-inverse: var(--acorn-dark-text-inverse);
 
-    --acorn-border-subtle: rgba(255, 255, 255, 0.10);
-    --acorn-border-strong: rgba(255, 255, 255, 0.20);
-    --acorn-focus-outline-color: #37adff;
+    --acorn-border-subtle: var(--acorn-dark-border-subtle);
+    --acorn-border-strong: var(--acorn-dark-border-strong);
+    --acorn-focus-outline-color: var(--acorn-dark-focus-outline-color);
 
-    --acorn-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.35);
-    --acorn-elevation-2: 0 4px 8px -1px rgba(0, 0, 0, 0.45);
-    --acorn-elevation-3: 0 10px 18px -3px rgba(0, 0, 0, 0.55);
-    --acorn-elevation-modal: 0 20px 30px -5px rgba(0, 0, 0, 0.70);
+    --acorn-elevation-1: var(--acorn-dark-elevation-1);
+    --acorn-elevation-2: var(--acorn-dark-elevation-2);
+    --acorn-elevation-3: var(--acorn-dark-elevation-3);
+    --acorn-elevation-modal: var(--acorn-dark-elevation-modal);
   }
 }
 
 /* ==========================================================================
-   Acorn Light Neutral Foundations (Default for Light Theme)
+   Acorn Light Dynamic Foundations (prefers-color-scheme: light)
    ========================================================================== */
 @media (prefers-color-scheme: light) {
   :root {
-    --acorn-surface-canvas: #F9F9FB;       /* Crisp clean canvas */
-    --acorn-surface-layer-1: #F0F0F4;      /* Elevated card & surface base */
-    --acorn-surface-layer-2: #E0E0E6;      /* Interactive hover surface */
-    --acorn-surface-layer-3: #F0F0F4;      /* Recessed / badge surface */
-    --acorn-surface-dialog: #FFFFFF;       /* Elevated dialog surface */
-    --acorn-surface-overlay: rgba(0, 0, 0, 0.45); /* Backdrop */
+    --acorn-surface-canvas: var(--acorn-light-surface-canvas);
+    --acorn-surface-layer-1: var(--acorn-light-surface-layer-1);
+    --acorn-surface-layer-2: var(--acorn-light-surface-layer-2);
+    --acorn-surface-layer-3: var(--acorn-light-surface-layer-3);
+    --acorn-surface-dialog: var(--acorn-light-surface-dialog);
+    --acorn-surface-overlay: var(--acorn-light-surface-overlay);
 
-    --acorn-text-primary: #15141A;
-    --acorn-text-secondary: #5B5B66;
-    --acorn-text-muted: #5B5B66;           /* WCAG AA 5.9:1 */
-    --acorn-text-inverse: #FFFFFF;
+    --acorn-text-primary: var(--acorn-light-text-primary);
+    --acorn-text-secondary: var(--acorn-light-text-secondary);
+    --acorn-text-muted: var(--acorn-light-text-muted);
+    --acorn-text-inverse: var(--acorn-light-text-inverse);
 
-    --acorn-border-subtle: rgba(0, 0, 0, 0.10);
-    --acorn-border-strong: #CFCFD8;
-    --acorn-focus-outline-color: #0060df;
+    --acorn-border-subtle: var(--acorn-light-border-subtle);
+    --acorn-border-strong: var(--acorn-light-border-strong);
+    --acorn-focus-outline-color: var(--acorn-light-focus-outline-color);
 
-    --acorn-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.06);
-    --acorn-elevation-2: 0 4px 8px -1px rgba(0, 0, 0, 0.08);
-    --acorn-elevation-3: 0 10px 18px -3px rgba(0, 0, 0, 0.12);
-    --acorn-elevation-modal: 0 20px 30px -5px rgba(0, 0, 0, 0.18);
+    --acorn-elevation-1: var(--acorn-light-elevation-1);
+    --acorn-elevation-2: var(--acorn-light-elevation-2);
+    --acorn-elevation-3: var(--acorn-light-elevation-3);
+    --acorn-elevation-modal: var(--acorn-light-elevation-modal);
   }
 }

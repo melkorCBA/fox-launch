@@ -59,14 +59,20 @@
   --radius-search: var(--acorn-radius-pill);   /* 9999px */
 
   /* ========================================================================
-     4. Transitions & Motion
+     4. Interactive & Button Semantic Aliases
+     ======================================================================== */
+  --btn-primary-bg: var(--fx-orange);
+  --btn-primary-hover: var(--fx-orange-hover);
+
+  /* ========================================================================
+     5. Transitions & Motion
      ======================================================================== */
   --transition-instant: var(--acorn-transition-instant);
   --transition-fast: var(--acorn-transition-fast);
   --transition-normal: var(--acorn-transition-normal);
 
   /* ========================================================================
-     5. Firefox Native Container Identity Mappings
+     6. Firefox Native Container Identity Mappings
      ======================================================================== */
   --container-blue: var(--acorn-container-blue);
   --container-turquoise: var(--acorn-container-turquoise);
@@ -140,51 +146,52 @@
 
 /* ==========================================================================
    Explicit Manual Theme Overrides (Settings selection)
+   Seamlessly mapped to foundation tokens without literal duplication
    ========================================================================== */
 [data-theme="dark"] {
-  --bg-primary: #1C1B22;
-  --bg-secondary: #2B2A33;
-  --bg-tertiary: #201F27;
-  --bg-surface: #2B2A33;
-  --bg-surface-hover: #383742;
-  --bg-overlay: rgba(28, 27, 34, 0.85);
+  --bg-primary: var(--acorn-dark-surface-canvas);
+  --bg-secondary: var(--acorn-dark-surface-layer-1);
+  --bg-tertiary: var(--acorn-dark-surface-layer-3);
+  --bg-surface: var(--acorn-dark-surface-layer-1);
+  --bg-surface-hover: var(--acorn-dark-surface-layer-2);
+  --bg-overlay: var(--acorn-dark-surface-overlay);
 
-  --text-primary: #FBFBFE;
-  --text-secondary: #CFCFD8;
-  --text-muted: #A6A4B6;
-  --text-inverse: #15141A;
+  --text-primary: var(--acorn-dark-text-primary);
+  --text-secondary: var(--acorn-dark-text-secondary);
+  --text-muted: var(--acorn-dark-text-muted);
+  --text-inverse: var(--acorn-dark-text-inverse);
 
-  --border-subtle: rgba(255, 255, 255, 0.10);
-  --border-strong: rgba(255, 255, 255, 0.20);
-  --border-focus: #37adff;
-  --focus-ring-active: #37adff;
+  --border-subtle: var(--acorn-dark-border-subtle);
+  --border-strong: var(--acorn-dark-border-strong);
+  --border-focus: var(--acorn-dark-focus-outline-color);
+  --focus-ring-active: var(--acorn-dark-focus-outline-color);
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 10px 18px -3px rgba(0, 0, 0, 0.55);
-  --shadow-modal: 0 20px 30px -5px rgba(0, 0, 0, 0.70);
+  --shadow-sm: var(--acorn-dark-elevation-1);
+  --shadow-md: var(--acorn-dark-elevation-2);
+  --shadow-lg: var(--acorn-dark-elevation-3);
+  --shadow-modal: var(--acorn-dark-elevation-modal);
 }
 
 [data-theme="light"] {
-  --bg-primary: #F9F9FB;
-  --bg-secondary: #FFFFFF;
-  --bg-tertiary: #F0F0F4;
-  --bg-surface: #F0F0F4;
-  --bg-surface-hover: #E0E0E6;
-  --bg-overlay: rgba(0, 0, 0, 0.45);
+  --bg-primary: var(--acorn-light-surface-canvas);
+  --bg-secondary: #ffffff;
+  --bg-tertiary: var(--acorn-light-surface-layer-3);
+  --bg-surface: var(--acorn-light-surface-layer-1);
+  --bg-surface-hover: var(--acorn-light-surface-layer-2);
+  --bg-overlay: var(--acorn-light-surface-overlay);
 
-  --text-primary: #15141A;
-  --text-secondary: #5B5B66;
-  --text-muted: #5B5B66;
-  --text-inverse: #FFFFFF;
+  --text-primary: var(--acorn-light-text-primary);
+  --text-secondary: var(--acorn-light-text-secondary);
+  --text-muted: var(--acorn-light-text-muted);
+  --text-inverse: var(--acorn-light-text-inverse);
 
-  --border-subtle: rgba(0, 0, 0, 0.10);
-  --border-strong: #CFCFD8;
-  --border-focus: #0060df;
-  --focus-ring-active: #0060df;
+  --border-subtle: var(--acorn-light-border-subtle);
+  --border-strong: var(--acorn-light-border-strong);
+  --border-focus: var(--acorn-light-focus-outline-color);
+  --focus-ring-active: var(--acorn-light-focus-outline-color);
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 18px -3px rgba(0, 0, 0, 0.12);
-  --shadow-modal: 0 20px 30px -5px rgba(0, 0, 0, 0.18);
+  --shadow-sm: var(--acorn-light-elevation-1);
+  --shadow-md: var(--acorn-light-elevation-2);
+  --shadow-lg: var(--acorn-light-elevation-3);
+  --shadow-modal: var(--acorn-light-elevation-modal);
 }
