@@ -28,6 +28,37 @@ async function expectInternalScrolling(dialog: Locator): Promise<void> {
 }
 
 test.describe('Modal viewport bounds', () => {
+  for (const theme of ['light', 'dark'] as const) {
+    for (const viewport of [
+      { width: 1280, height: 720 },
+      { width: 1280, height: 480 },
+      { width: 375, height: 480 },
+    ]) {
+      test(`settings stays stable across tabs in ${theme} theme at ${viewport.width}x${viewport.height}`, async ({ openFoxLaunch, page }) => {
+        await page.setViewportSize(viewport);
+        await openFoxLaunch({ settings: { ...DEFAULT_SETTINGS, theme } });
+        await loc.settingsButton(page).click();
+        const dialog = page.getByTestId('settings-modal');
+        await expectViewportSafeLayout(dialog);
+        await dialog.evaluate(async (element) => {
+          await Promise.all(element.getAnimations().map((animation) => animation.finished));
+        });
+        const dialogBefore = await dialog.boundingBox();
+        const footerBefore = await dialog.locator('.modal-footer').boundingBox();
+        const doneBefore = await dialog.getByTestId('modal-done-btn').boundingBox();
+
+        for (const tab of ['behavior', 'containers', 'data', 'appearance']) {
+          await dialog.getByTestId(`nav-tab-${tab}`).click();
+          await expect(dialog.getByTestId(`nav-tab-${tab}`)).toHaveAttribute('aria-selected', 'true');
+          await expectViewportSafeLayout(dialog);
+          expect(await dialog.boundingBox()).toEqual(dialogBefore);
+          expect(await dialog.locator('.modal-footer').boundingBox()).toEqual(footerBefore);
+          expect(await dialog.getByTestId('modal-done-btn').boundingBox()).toEqual(doneBefore);
+        }
+      });
+    }
+  }
+
   for (const viewport of [
     { width: 1280, height: 720 },
     { width: 1280, height: 480 },
