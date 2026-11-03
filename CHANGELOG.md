@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-03
+
+### Fixed
+- Modal dialog height in Settings Preferences Studio stays stable across tab switches, preventing vertical layout shift and preserving scrolling context (#54).
+
 ## [1.3.0] - 2026-11-02
 
 ### Added
