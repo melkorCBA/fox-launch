@@ -57,6 +57,7 @@
   --radius-button: var(--acorn-radius-md);     /* 10px */
   --radius-badge: var(--acorn-radius-pill);    /* 9999px */
   --radius-search: var(--acorn-radius-pill);   /* 9999px */
+  --settings-modal-height: 560px;
 
   /* ========================================================================
      4. Interactive & Button Semantic Aliases

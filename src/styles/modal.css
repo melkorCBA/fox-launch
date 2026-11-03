@@ -200,6 +200,7 @@
 .settings-modal {
   width: 100%;
   max-width: min(720px, calc(100dvw - 2 * var(--space-4)));
+  height: min(var(--settings-modal-height), calc(100dvh - 2 * var(--space-4)));
   max-height: calc(100dvh - 2 * var(--space-4));
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -224,6 +225,7 @@
 
 .settings-modal .modal-body {
   display: flex;
+  flex: 1;
   flex-direction: row;
   align-items: stretch;
   min-height: 0;
