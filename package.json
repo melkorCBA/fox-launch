@@ -32,11 +32,11 @@
     "test": "pnpm run typecheck && pnpm run build && pnpm run lint:ext && pnpm run test:e2e"
   },
   "devDependencies": {
-    "@playwright/test": "^1.57.0",
+    "@playwright/test": "^1.65.0",
     "@types/firefox-webext-browser": "^143.0.1",
     "@types/node": "^26.6.6",
     "typescript": "^7.0.2",
-    "vite": "^8.3.5",
+    "vite": "^8.3.8",
     "web-ext": "^10.8.0"
   },
   "pnpm": {
